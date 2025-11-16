@@ -13,15 +13,16 @@
 </head>
 <body bgcolor="#1b1b1b">
 
-  <!-- J'ai change le style pour que les liens changent pas de coulour lorsqu'ils sont clickes -->
-  <div style="display:none;">
+  <!-- J'ai apris que si on met un <style> au debut de la page ou dans le head, tous les balises de ce type prendran ce style. Ici j'ai change le style pour que 
+    les liens changent pas de coulour a blue lorsqu'ils sont clickes -->
+
     <style>
-      a { color:white; text-decoration:none; }  /* Le lien est d'abord blanc */
+      a { color:white; text-decoration:underline; }  /* Le lien est d'abord blanc */
       a:visited { color:white; }  /* Il reste blanc meme apres clicker */
-      a:hover { color:#D4BA67; text-decoration:none; }    /* Lorsque on hover, il change de coulor, j'ai choisi dore */
-      a:active { color:#D4BA67; text-decoration:none; } 
+      a:hover { color:#D4BA67; text-decoration:underline; }    /* Lorsque on hover, il change de coulor, j'ai choisi dore */
+      a:active { color:#D4BA67; text-decoration:underline; } 
     </style>
-  </div>
+
 
   <header style="display:flex; align-items:center; justify-content:space-between; padding:10px;">
 
@@ -46,6 +47,7 @@
 
 <section class="hero" style="font-family: 'Cinzel', serif; color:white; text-align: center;">
           <div>
+            <a href="index.html">Volver a inicio |</a> 
             <a href="Services.html">Conoce nuestros servicios y precios|</a> 
               <a href="https://wa.me/5214423536769" target="_blank">Agenda tu cita |</a>
 
@@ -63,7 +65,7 @@
 
 <div style="text-align: center;">
   
-  <p style="font-family: 'Montserrat', serif; color: white; font-weight: bold;"> Contamos con servicios para dama y caballero</p>
+  <p style="font-family: 'Cinzel'; color: white; font-weight: bold;"> Contamos con servicios para dama y caballero</p>
 
 
   <div style="display: flex; justify-content: center; overflow-x: auto; scroll-behavior: smooth; gap: 10px; padding: 10px;">

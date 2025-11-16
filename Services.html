@@ -13,14 +13,12 @@
 <body bgcolor="#1b1b1b">
 
       <!-- J'ai change le style pour que les liens changent pas de coulour lorsqu'ils sont clickes -->
-  <div style="display:none;">
     <style>
-      a { color:white; text-decoration:none; }
-      a:visited { color:white; }
-      a:hover { color:#D4BA67; text-decoration:none; }
-      a:active { color:#D4BA67; text-decoration:none; }
+      a { color:white; text-decoration:underline; }  /* Le lien est d'abord blanc */
+      a:visited { color:white; }  /* Il reste blanc meme apres clicker */
+      a:hover { color:#D4BA67; text-decoration:underline; }    /* Lorsque on hover, il change de coulor, j'ai choisi dore */
+      a:active { color:#D4BA67; text-decoration:underline; } 
     </style>
-  </div>
 
 <header style="display:flex; align-items:center; justify-content:space-between; padding:10px;">
 
@@ -45,6 +43,7 @@
 
 <section class="hero" style="font-family: 'Cinzel', serif; color:white; text-align: center;">
           <div>
+            <a href="index.html">Volver a inicio |</a> 
             <a href="Services.html">Conoce nuestros servicios y precios|</a> 
               <a href="https://wa.me/5214423536769" target="_blank">Agenda tu cita |</a>
 
