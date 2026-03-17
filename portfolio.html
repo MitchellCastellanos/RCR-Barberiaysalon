@@ -1,80 +1,126 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Work | GABAN Solutions Numériques</title>
-  <meta name="description" content="Examples of websites and digital solutions built for local businesses." />
 
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-  <link rel="stylesheet" href="./MyCSS.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Portfolio | Real Client Websites | GABAN Solutions Numériques</title>
+
+<meta name="description" content="Explore real client websites built by GABAN Solutions Numériques. Projects focused on branding, booking systems, and practical results for local businesses.">
+
+<meta name="keywords" content="web design portfolio Montréal, client website examples, business websites portfolio, GABAN Solutions projects">
+
+<meta name="author" content="GABAN Solutions Numériques">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#111111">
+
+<link rel="canonical" href="https://gabansolutions.ca/portfolio.html">
+
+<link rel="icon" href="./Images/favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="./Images/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="./Images/favicon-16.png">
+<link rel="apple-touch-icon" href="./Images/apple-touch-icon.png">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:locale" content="en_CA">
+<meta property="og:site_name" content="GABAN Solutions Numériques">
+<meta property="og:title" content="Portfolio | Real Client Websites by GABAN Solutions">
+<meta property="og:description" content="Explore real projects built for local businesses including barbershops, service companies, and consulting brands.">
+<meta property="og:url" content="https://gabansolutions.ca/portfolio.html">
+<meta property="og:image" content="https://gabansolutions.ca/Images/og/gaban-home-preview.jpg">
+<meta property="og:image:alt" content="Portfolio of websites built by GABAN Solutions">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Portfolio | Real Client Websites by GABAN Solutions">
+<meta name="twitter:description" content="Examples of websites built for real businesses: barbershops, service brands and consulting companies.">
+<meta name="twitter:image" content="https://gabansolutions.ca/Images/og/gaban-home-preview.jpg">
+
+<!-- Performance -->
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preload" href="./MyCSS.css" as="style">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="./MyCSS.css">
+
+<!-- Schema -->
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "CollectionPage",
+ "@id": "https://gabansolutions.ca/portfolio.html#portfolio",
+ "name": "GABAN Solutions Portfolio",
+ "description": "Portfolio of websites and digital projects built for local businesses.",
+ "url": "https://gabansolutions.ca/portfolio.html",
+ "about": {
+   "@id": "https://gabansolutions.ca/#business"
+ },
+ "hasPart": [
+  {
+   "@type": "CreativeWork",
+   "name": "RCR Barber Shop Website",
+   "url": "https://www.rcr-barbershop.com/",
+   "description": "Multi-page barbershop website with booking integration and service presentation."
+  },
+  {
+   "@type": "CreativeWork",
+   "name": "Redwood Growth Website",
+   "url": "https://mitchellcastellanos.github.io/Redwood-Growth/",
+   "description": "Consulting website explaining sales processes and lead management systems."
+  }
+ ]
+}
+</script>
+
 </head>
 <body>
 
-<!-- NAVBAR -->
-<nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
-  <div class="container">
-    <a class="navbar-brand fw-bold" href="./index.html">
-      GABAN <span class="fw-normal">Solutions Numériques</span>
-    </a>
+<div id="site-navbar"></div>
 
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <div class="collapse navbar-collapse" id="navMain">
-      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-        <li class="nav-item"><a class="nav-link" href="./index.html" data-i18n="nav_home">Home</a></li>
-        <li class="nav-item"><a class="nav-link" href="./services.html" data-i18n="nav_services">Services</a></li>
-        <li class="nav-item"><a class="nav-link" href="./express.html" data-i18n="nav_express">Express</a></li>
-        <li class="nav-item"><a class="nav-link active" href="./portfolio.html" data-i18n="nav_work">Work</a></li>
-        <li class="nav-item"><a class="nav-link" href="./about.html" data-i18n="nav_about">About</a></li>
-        <li class="nav-item"><a class="nav-link" href="./contact.html" data-i18n="nav_contact">Contact</a></li>
-      </ul>
-
-      <a class="btn btn-dark ms-lg-3" href="./contact.html" data-i18n="nav_cta">Free Consultation</a>
-
-      <div class="ms-lg-3 mt-3 mt-lg-0 d-flex align-items-center gap-2">
-        <button class="btn btn-outline-dark btn-sm" id="btnEN" type="button">EN</button>
-        <button class="btn btn-outline-dark btn-sm" id="btnFR" type="button">FR</button>
-      </div>
-    </div>
-  </div>
-</nav>
-
-<!-- HEADER -->
 <header class="py-5 bg-light">
   <div class="container">
     <div class="row align-items-center g-3">
       <div class="col-lg-8">
-        <h1 class="fw-bold mb-2" data-i18n="work_h1">Work</h1>
+        <h1 class="fw-bold mb-2" data-i18n="work_h1">Our Work</h1>
         <p class="text-muted mb-0" data-i18n="work_sub">
-          Real projects built for local businesses—focused on clarity, branding, and results.
+          Real projects built for local businesses — focused on clarity, branding, and practical results.
         </p>
       </div>
+
       <div class="col-lg-4 text-lg-end">
-        <a class="btn btn-dark" href="./contact.html" data-i18n="work_header_btn">Start Your Project</a>
+        <a class="btn btn-dark" href="./contact.html" data-i18n="work_header_btn">
+          Start Your Project
+        </a>
       </div>
     </div>
   </div>
 </header>
 
-<!-- FEATURED PROJECT -->
-<section class="section">
+<section id="rcr" class="section">
   <div class="container">
     <div class="row align-items-center g-5">
+
       <div class="col-lg-6">
-        <img src="./Images/portfolio/RCR_Servicios.png" class="img-fluid rounded shadow" alt="RCR Barber Shop homepage">
+        <img
+          src="./Images/portfolio/CoverRCR.jpg"
+          class="img-fluid"
+          alt="RCR Barber Shop website">
       </div>
 
       <div class="col-lg-6">
-        <div class="text-uppercase small fw-semibold text-muted mb-2" data-i18n="featured_tag">Featured Project</div>
+        <div class="text-uppercase small fw-semibold text-muted mb-2" data-i18n="featured_tag">
+          Featured Project
+        </div>
 
         <h2 class="fw-bold mb-2">RCR Barber Shop</h2>
 
         <p class="text-muted mb-4" data-i18n="rcr_intro">
-          Multi-page website for a local barbershop brand with booking integration, service presentation, and contact-focused structure.
+          Multi-page website for a local barbershop brand with booking integration, service presentation, and trust-focused structure.
         </p>
 
         <div class="mb-3">
@@ -82,6 +128,7 @@
             <i class="bi bi-person-workspace fs-5"></i>
             <h3 class="h6 fw-bold mb-0" data-i18n="rcr_need_t">Client need</h3>
           </div>
+
           <p class="text-muted small mb-0" data-i18n="rcr_need_d">
             RCR needed a professional online presence that matched its premium identity and made it easier for clients to explore services, view hours, and book appointments.
           </p>
@@ -92,6 +139,7 @@
             <i class="bi bi-code-slash fs-5"></i>
             <h3 class="h6 fw-bold mb-0" data-i18n="rcr_build_t">What we built</h3>
           </div>
+
           <p class="text-muted small mb-0" data-i18n="rcr_build_d">
             A branded multi-page website including homepage, services page, location and hours page, booking integration, gallery, and review-driven engagement sections.
           </p>
@@ -114,18 +162,24 @@
         </div>
 
         <div class="d-flex gap-2 flex-wrap">
-          <a href="https://www.rcr-barberiasalon.com/" target="_blank" rel="noopener noreferrer" class="btn btn-dark" data-i18n="rcr_btn_live">Visit Website</a>
-          <a href="./contact.html" class="btn btn-outline-dark" data-i18n="rcr_btn_start">Start Your Project</a>
+          <a href="https://www.rcr-barbershop.com/" target="_blank" rel="noopener noreferrer" class="btn btn-dark" data-i18n="rcr_btn_live">
+            Visit Website
+          </a>
+
+          <a href="./contact.html" class="btn btn-outline-dark" data-i18n="rcr_btn_start">
+            Start Your Project
+          </a>
         </div>
       </div>
+
     </div>
   </div>
 </section>
 
-<!-- PROJECT VALUE -->
 <section class="section bg-light">
   <div class="container">
     <div class="row g-3 text-center">
+
       <div class="col-md-3">
         <div class="card h-100 project-card border-0 shadow-sm">
           <div class="card-body">
@@ -165,223 +219,170 @@
           </div>
         </div>
       </div>
+
     </div>
   </div>
 </section>
 
-<!-- OTHER SOLUTIONS -->
-<section class="section">
+<section id="redwood" class="section">
   <div class="container">
-    <div class="text-center mb-4">
-      <h2 class="fw-bold" data-i18n="other_title">Other Solutions</h2>
-      <p class="text-muted mb-0" data-i18n="other_sub">
-        More business-focused website solutions available.
-      </p>
-    </div>
+    <div class="row align-items-center g-5">
 
-    <div class="row g-3">
-      <div class="col-md-6">
-        <div class="card h-100 project-card">
-          <div class="card-body p-4">
-            <div class="d-flex align-items-center gap-2 mb-2">
-              <i class="bi bi-lightning-charge fs-4"></i>
-              <h3 class="h5 fw-bold mb-0" data-i18n="other_1t">Express Website 72H</h3>
-            </div>
-            <p class="text-muted small mb-3" data-i18n="other_1d">
-              Fast-launch websites for businesses that need to get online quickly.
-            </p>
-            <a href="./express.html" class="btn btn-outline-dark" data-i18n="other_1b">View Service</a>
+      <div class="col-lg-6">
+        <img
+          src="./Images/portfolio/Redwood.png"
+          class="img-fluid"
+          alt="Redwood Growth website">
+      </div>
+
+      <div class="col-lg-6">
+        <div class="text-uppercase small fw-semibold text-muted mb-2" data-i18n="redwood_tag">
+          Client Project
+        </div>
+
+        <h2 class="fw-bold mb-2">Redwood Growth</h2>
+
+        <p class="text-muted mb-4" data-i18n="redwood_intro">
+          Strategic website for a business focused on sales process structure, follow-up systems, and clearer visibility into daily activity.
+        </p>
+
+        <div class="mb-3">
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <i class="bi bi-exclamation-circle fs-5"></i>
+            <h3 class="h6 fw-bold mb-0" data-i18n="redwood_need_t">Client need</h3>
           </div>
+
+          <p class="text-muted small mb-0" data-i18n="redwood_need_d">
+            Redwood needed a clearer way to explain its offer and show how its system helps businesses organize leads, improve follow-up, reduce missed opportunities, and understand what is happening in the sales pipeline.
+          </p>
+        </div>
+
+        <div class="mb-3">
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <i class="bi bi-diagram-3 fs-5"></i>
+            <h3 class="h6 fw-bold mb-0" data-i18n="redwood_build_t">What we built</h3>
+          </div>
+
+          <p class="text-muted small mb-0" data-i18n="redwood_build_d">
+            A clean service website with a strong problem / solution narrative, implementation steps, testimonials, pricing presentation, and consultation-based calls to action.
+          </p>
+        </div>
+
+        <div class="mb-4">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <i class="bi bi-stars fs-5"></i>
+            <h3 class="h6 fw-bold mb-0" data-i18n="redwood_high_t">Project highlights</h3>
+          </div>
+
+          <div class="d-flex flex-wrap gap-2">
+            <span class="badge text-bg-dark" data-i18n="redwood_h1">Service landing page</span>
+            <span class="badge text-bg-dark" data-i18n="redwood_h2">Offer clarity</span>
+            <span class="badge text-bg-dark" data-i18n="redwood_h3">Problem / solution flow</span>
+            <span class="badge text-bg-dark" data-i18n="redwood_h4">Implementation steps</span>
+            <span class="badge text-bg-dark" data-i18n="redwood_h5">Testimonials</span>
+            <span class="badge text-bg-dark" data-i18n="redwood_h6">Consultation CTA</span>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap">
+          <a href="https://mitchellcastellanos.github.io/Redwood-Growth/" target="_blank" rel="noopener noreferrer" class="btn btn-dark" data-i18n="redwood_btn_live">
+            Visit Website
+          </a>
+
+          <a href="./services.html" class="btn btn-outline-dark" data-i18n="redwood_btn_services">
+            View Services
+          </a>
         </div>
       </div>
 
-      <div class="col-md-6">
-        <div class="card h-100 project-card">
-          <div class="card-body p-4">
-            <div class="d-flex align-items-center gap-2 mb-2">
-              <i class="bi bi-diagram-3 fs-4"></i>
-              <h3 class="h5 fw-bold mb-0" data-i18n="other_2t">Business Website Framework</h3>
-            </div>
-            <p class="text-muted small mb-3" data-i18n="other_2d">
-              A flexible website structure adaptable to different local business industries.
-            </p>
-            <a href="./contact.html" class="btn btn-outline-dark" data-i18n="other_2b">Request Info</a>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </section>
 
-<!-- CTA -->
+<section class="section bg-light">
+  <div class="container">
+    <div class="row g-3 text-center">
+
+      <div class="col-md-3">
+        <div class="card h-100 project-card border-0 shadow-sm">
+          <div class="card-body">
+            <i class="bi bi-funnel fs-2 mb-3"></i>
+            <div class="fw-semibold" data-i18n="redwood_stat_1t">Lead flow clarity</div>
+            <div class="text-muted small" data-i18n="redwood_stat_1d">
+              Clear explanation of how leads move through the sales process.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card h-100 project-card border-0 shadow-sm">
+          <div class="card-body">
+            <i class="bi bi-diagram-3 fs-2 mb-3"></i>
+            <div class="fw-semibold" data-i18n="redwood_stat_2t">Structured process</div>
+            <div class="text-muted small" data-i18n="redwood_stat_2d">
+              Organized service flow that makes the offer easier to understand.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card h-100 project-card border-0 shadow-sm">
+          <div class="card-body">
+            <i class="bi bi-chat-square-text fs-2 mb-3"></i>
+            <div class="fw-semibold" data-i18n="redwood_stat_3t">Consultation-focused</div>
+            <div class="text-muted small" data-i18n="redwood_stat_3d">
+              Built to guide visitors toward booking a call or consultation.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card h-100 project-card border-0 shadow-sm">
+          <div class="card-body">
+            <i class="bi bi-graph-up-arrow fs-2 mb-3"></i>
+            <div class="fw-semibold" data-i18n="redwood_stat_4t">Growth-oriented messaging</div>
+            <div class="text-muted small" data-i18n="redwood_stat_4d">
+              Content designed around follow-up, visibility, and sales improvement.
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
 <section class="section bg-dark text-white">
   <div class="container">
     <div class="row align-items-center g-3">
       <div class="col-lg-8">
         <h2 class="h4 fw-bold mb-2" data-i18n="work_cta_t">Want a similar result for your business?</h2>
         <p class="mb-0 text-white-50" data-i18n="work_cta_d">
-          Tell us what you do and what you need. We’ll propose a simple plan and a clear next step.
+          Tell us what you do and what you need. We'll propose a simple plan and a clear next step.
         </p>
       </div>
+
       <div class="col-lg-4 text-lg-end">
-        <a class="btn btn-light" href="./contact.html" data-i18n="work_cta_btn">Start Your Project</a>
+        <a class="btn btn-light" href="./contact.html" data-i18n="work_cta_btn">
+          Start Your Project
+        </a>
       </div>
     </div>
   </div>
 </section>
 
-<!-- FOOTER -->
-<footer class="py-4 border-top">
-  <div class="container d-flex flex-column flex-md-row align-items-center justify-content-between gap-2">
-    <div class="small text-muted">© <span id="year"></span> GABAN Solutions Numériques — Montréal, QC</div>
-    <div class="small">
-      <a class="text-decoration-none me-3" href="./services.html" data-i18n="nav_services">Services</a>
-      <a class="text-decoration-none me-3" href="./express.html" data-i18n="nav_express">Express</a>
-      <a class="text-decoration-none" href="./contact.html" data-i18n="nav_contact">Contact</a>
-    </div>
-  </div>
-</footer>
+<div id="site-footer"></div>
 
+<script src="./js/components.js"></script>
+<script src="./js/i18n.js"></script>
 <script>
-  document.getElementById("year").textContent = new Date().getFullYear();
+mountSharedLayout("work");
+initI18n("portfolio");
 </script>
-
-<script>
-  const i18n = {
-    en: {
-      nav_home: "Home",
-      nav_services: "Services",
-      nav_express: "Express",
-      nav_work: "Work",
-      nav_about: "About",
-      nav_contact: "Contact",
-      nav_cta: "Free Consultation",
-
-      work_h1: "Work",
-      work_sub: "Real projects built for local businesses—focused on clarity, branding, and results.",
-      work_header_btn: "Start Your Project",
-
-      featured_tag: "Featured Project",
-      rcr_intro: "Multi-page website for a local barbershop brand with booking integration, service presentation, and contact-focused structure.",
-
-      rcr_need_t: "Client need",
-      rcr_need_d: "RCR needed a professional online presence that matched its premium identity and made it easier for clients to explore services, view hours, and book appointments.",
-
-      rcr_build_t: "What we built",
-      rcr_build_d: "A branded multi-page website including homepage, services page, location and hours page, booking integration, gallery, and review-driven engagement sections.",
-
-      rcr_high_t: "Project highlights",
-      rcr_h1: "Mobile-first layout",
-      rcr_h2: "Booking integration",
-      rcr_h3: "Pricing page",
-      rcr_h4: "Gallery section",
-      rcr_h5: "Google Maps embed",
-      rcr_h6: "Review funnel",
-
-      rcr_btn_live: "Visit Website",
-      rcr_btn_start: "Start Your Project",
-
-      stat_1t: "Multi-page structure",
-      stat_1d: "Home, services, location, and booking-ready flow.",
-      stat_2t: "Mobile-focused",
-      stat_2d: "Built to look strong on phones and tablets.",
-      stat_3t: "Booking-ready",
-      stat_3d: "Clear CTA path to appointment booking.",
-      stat_4t: "Strong branding",
-      stat_4d: "Premium black and gold visual identity.",
-
-      other_title: "Other Solutions",
-      other_sub: "More business-focused website solutions available.",
-      other_1t: "Express Website 72H",
-      other_1d: "Fast-launch websites for businesses that need to get online quickly.",
-      other_1b: "View Service",
-      other_2t: "Business Website Framework",
-      other_2d: "A flexible website structure adaptable to different local business industries.",
-      other_2b: "Request Info",
-
-      work_cta_t: "Want a similar result for your business?",
-      work_cta_d: "Tell us what you do and what you need. We’ll propose a simple plan and a clear next step.",
-      work_cta_btn: "Start Your Project"
-    },
-
-    fr: {
-      nav_home: "Accueil",
-      nav_services: "Services",
-      nav_express: "Express",
-      nav_work: "Réalisations",
-      nav_about: "À propos",
-      nav_contact: "Contact",
-      nav_cta: "Consultation gratuite",
-
-      work_h1: "Réalisations",
-      work_sub: "Des projets réels créés pour des entreprises locales — avec clarté, branding et résultats.",
-      work_header_btn: "Démarrer votre projet",
-
-      featured_tag: "Projet en vedette",
-      rcr_intro: "Site multi-page pour une marque de barbershop locale avec intégration de réservation, présentation des services et structure orientée contact.",
-
-      rcr_need_t: "Besoin du client",
-      rcr_need_d: "RCR avait besoin d’une présence en ligne professionnelle qui reflète son identité premium et facilite la découverte des services, des horaires et de la réservation.",
-
-      rcr_build_t: "Ce qu’on a construit",
-      rcr_build_d: "Un site multi-page de marque incluant page d’accueil, page services, page contact/horaires, intégration de réservation, galerie et sections orientées avis clients.",
-
-      rcr_high_t: "Points forts du projet",
-      rcr_h1: "Design mobile-first",
-      rcr_h2: "Intégration de réservation",
-      rcr_h3: "Page tarifs/services",
-      rcr_h4: "Section galerie",
-      rcr_h5: "Intégration Google Maps",
-      rcr_h6: "Tunnel d’avis clients",
-
-      rcr_btn_live: "Visiter le site",
-      rcr_btn_start: "Démarrer votre projet",
-
-      stat_1t: "Structure multi-page",
-      stat_1d: "Accueil, services, horaires et parcours prêt pour réservation.",
-      stat_2t: "Pensé mobile",
-      stat_2d: "Conçu pour être fort sur téléphone et tablette.",
-      stat_3t: "Prêt pour la réservation",
-      stat_3d: "Parcours clair vers la prise de rendez-vous.",
-      stat_4t: "Branding fort",
-      stat_4d: "Identité visuelle premium noir et or.",
-
-      other_title: "Autres solutions",
-      other_sub: "D’autres solutions web orientées business sont disponibles.",
-      other_1t: "Site Express 72H",
-      other_1d: "Sites rapides pour les entreprises qui doivent être en ligne rapidement.",
-      other_1b: "Voir le service",
-      other_2t: "Framework de site business",
-      other_2d: "Une structure flexible adaptable à différents types d’entreprises locales.",
-      other_2b: "Demander info",
-
-      work_cta_t: "Vous voulez un résultat similaire pour votre entreprise?",
-      work_cta_d: "Dites-nous ce que vous faites et ce dont vous avez besoin. On vous proposera un plan simple et une prochaine étape claire.",
-      work_cta_btn: "Démarrer votre projet"
-    }
-  };
-
-  function setLanguage(lang) {
-    localStorage.setItem("lang", lang);
-    document.documentElement.lang = lang;
-
-    document.querySelectorAll("[data-i18n]").forEach(el => {
-      const key = el.getAttribute("data-i18n");
-      if (i18n[lang] && i18n[lang][key]) el.textContent = i18n[lang][key];
-    });
-
-    document.getElementById("btnEN").classList.toggle("btn-dark", lang === "en");
-    document.getElementById("btnEN").classList.toggle("btn-outline-dark", lang !== "en");
-    document.getElementById("btnFR").classList.toggle("btn-dark", lang === "fr");
-    document.getElementById("btnFR").classList.toggle("btn-outline-dark", lang !== "fr");
-  }
-
-  document.getElementById("btnEN").addEventListener("click", () => setLanguage("en"));
-  document.getElementById("btnFR").addEventListener("click", () => setLanguage("fr"));
-
-  setLanguage(localStorage.getItem("lang") || "en");
-</script>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>

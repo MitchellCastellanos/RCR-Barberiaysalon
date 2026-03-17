@@ -1,407 +1,391 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="en-CA">
+<!doctype html>
+<html lang="en-CA">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>RCR Barber Shop</title>
+  <title>Web Design, Automation & Digital Solutions in Montréal | GABAN Solutions Numériques</title>
 
-<link rel="icon" href="./Images/favicon.ico">
-<link rel="icon" type="image/png" sizes="16x16" href="./Images/favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="./Images/favicon-32x32.png">
-<link rel="apple-touch-icon" sizes="180x180" href="./Images/apple-touch-icon.png">
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <meta name="google-site-verification" content="bjQO6zrUY55Sg1WHaTpml4FwnrOKtvIx2nW9tMqyLJM" />
+  <meta name="description" content="Professional web design, automation and digital solutions for small businesses in Montréal. Launch your website in as little as 72 hours.">
+  <meta name="keywords" content="web design Montréal, small business website Montréal, automation for local business, digital solutions Montréal, custom software Montréal, GABAN Solutions">
+  <meta name="author" content="GABAN Solutions Numériques">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#111111">
 
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+  <link rel="canonical" href="https://gabansolutions.ca/">
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <!-- Favicons -->
+  <link rel="icon" href="./Images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="./Images/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="./Images/favicon-16.png">
+  <link rel="apple-touch-icon" href="./Images/apple-touch-icon.png">
 
-<link rel="stylesheet" href="./MyCSS.css">
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="en_CA">
+  <meta property="og:site_name" content="GABAN Solutions Numériques">
+  <meta property="og:title" content="Web Design, Automation & Digital Solutions in Montréal">
+  <meta property="og:description" content="Professional web design, automation and digital solutions for small businesses in Montréal. Launch your website in as little as 72 hours.">
+  <meta property="og:url" content="https://gabansolutions.ca/">
+  <meta property="og:image" content="https://gabansolutions.ca/Images/og/gaban-home-preview.jpg">
+  <meta property="og:image:secure_url" content="https://gabansolutions.ca/Images/og/gaban-home-preview.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:alt" content="GABAN Solutions Numériques homepage preview">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:site_name" content="GABAN Solutions Numériques">
+<meta property="og:locale:alternate" content="fr_CA">
+<meta property="og:site_name" content="GABAN Solutions Numériques">
+<meta property="og:locale" content="en_CA">
+<meta property="og:locale:alternate" content="fr_CA">
+<meta property="og:image:secure_url" content="https://gabansolutions.ca/Images/og/gaban-home-preview.jpg">
 
-<meta name="author" content="GABAN Solutions">
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Web Design, Automation & Digital Solutions in Montréal">
+  <meta name="twitter:description" content="Professional web design, automation and digital solutions for small businesses in Montréal. Launch your website in as little as 72 hours.">
+  <meta name="twitter:image" content="https://gabansolutions.ca/Images/og/gaban-home-preview.jpg">
+  <meta name="twitter:image:alt" content="GABAN Solutions Numériques homepage preview">
 
+  <!-- Performance -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preload" href="./MyCSS.css" as="style">
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="./MyCSS.css">
+
+  <!-- Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": ["LocalBusiness", "ProfessionalService"],
+    "@id": "https://gabansolutions.ca/#business",
+    "name": "GABAN Solutions Numériques",
+    "url": "https://gabansolutions.ca/",
+    "image": "https://gabansolutions.ca/Images/og/gaban-home-preview.jpg",
+    "telephone": "+1-514-258-0648",
+    "email": "hello@gabansolutions.ca",
+    "priceRange": "$$",
+    "description": "GABAN Solutions Numériques builds websites, automation and custom digital solutions for small businesses in Montréal.",
+    "areaServed": [
+      {
+        "@type": "City",
+        "name": "Montréal"
+      },
+      {
+        "@type": "Province",
+        "name": "Québec"
+      }
+    ],
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Montréal",
+      "addressRegion": "QC",
+      "addressCountry": "CA"
+    },
+    "sameAs": [
+      "https://www.instagram.com/gabansolutions/"
+    ],
+    "serviceType": [
+      "Website Design",
+      "Website Development",
+      "Business Automation",
+      "Custom Software",
+      "Digital Solutions for Small Businesses"
+    ]
+  }
+  </script>
 </head>
 <body>
 
-<header class="py-3 border-bottom border-warning">
-  <div class="container">
-    <div class="row align-items-center gy-2">
-      <div class="col-12 col-md-3 text-center text-md-start">
-        <a href="index.html" class="d-inline-block">
-          <img src="./Images/Logo_RCR_2026_SinFondo.png" class="img-fluid" style="max-width:150px;" alt="RCR Logo">
-        </a>
-      </div>
+<div id="site-navbar"></div>
 
-      <div class="col-12 col-md-6 text-center">
-        <h1 class="m-0" style="font-family:'Cinzel'; color:#D4BA67;">RCR Barber Shop</h1>
-        <p class="m-0 text-white" style="font-family:'Cinzel';">
-          Donde el estilo se combina con la asesoría y el mejor trato.
+<!-- HERO -->
+<header class="hero bg-dark text-white">
+  <div class="container py-5">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-7">
+        <h1 class="display-5 fw-bold mb-3" data-i18n="home_h1">
+          Smart Digital Solutions for Small Businesses
+        </h1>
+
+        <p class="lead mb-4 text-white-50" data-i18n="home_lead">
+          Websites, automation and custom software to help your business grow.
         </p>
+
+        <div class="d-flex gap-2 flex-wrap">
+          <a class="btn btn-warning btn-lg" href="./contact.html" data-i18n="home_cta1">Get a Free Consultation</a>
+          <a class="btn btn-outline-light btn-lg" href="./services.html" data-i18n="home_cta2">View Our Services</a>
+        </div>
+
+        <div class="mt-4 small text-white-50" data-i18n="home_trust">
+          Montréal-based • Fast delivery • Clear communication
+        </div>
       </div>
 
-      <div class="col-12 col-md-3 d-none d-md-block"></div>
+      <div class="col-lg-5">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body p-4">
+            <h2 class="h5 fw-bold mb-3" data-i18n="home_expect_title">What you can expect</h2>
+            <ul class="list-unstyled mb-0">
+              <li class="d-flex gap-3 mb-3">
+                <div class="bg-dark text-white rounded-3 px-3 py-2">✓</div>
+                <div>
+                  <div class="fw-semibold" data-i18n="home_expect_1t">Simple process</div>
+                  <div class="text-muted small" data-i18n="home_expect_1d">Consultation → Build → Launch & support.</div>
+                </div>
+              </li>
+              <li class="d-flex gap-3 mb-3">
+                <div class="bg-dark text-white rounded-3 px-3 py-2">✓</div>
+                <div>
+                  <div class="fw-semibold" data-i18n="home_expect_2t">Practical solutions</div>
+                  <div class="text-muted small" data-i18n="home_expect_2d">We focus on what improves your business day-to-day.</div>
+                </div>
+              </li>
+              <li class="d-flex gap-3">
+                <div class="bg-dark text-white rounded-3 px-3 py-2">✓</div>
+                <div>
+                  <div class="fw-semibold" data-i18n="home_expect_3t">Local support</div>
+                  <div class="text-muted small" data-i18n="home_expect_3d">Montréal, QC — reachable by phone or email.</div>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </header>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark border-bottom border-warning">
+<!-- STAR SERVICE -->
+<section class="section bg-light">
   <div class="container">
-    <a class="navbar-brand d-lg-none" href="index.html" style="font-family:'Cinzel'; color:#D4BA67;">RCR</a>
-
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#rcrNav">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <div class="collapse navbar-collapse" id="rcrNav">
-      <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
-        <li class="nav-item"><a class="nav-link" href="index.html">Inicio</a></li>
-        <li class="nav-item"><a class="nav-link" href="Services.html">Servicios</a></li>
-        <li class="nav-item"><a class="nav-link" href="Contact.html">Ubicación y horarios</a></li>
-      </ul>
-
-      <button
-        id="Anywhere_button_iframe"
-        class="anywhere-book-now-button btn btn-warning fw-semibold d-none d-lg-inline-flex"
-        data-booking-url="https://rcr-barber-shop.setmore.com"
-        data-new-tab="false">
-        Haz tu cita
-      </button>
-    </div>
-  </div>
-</nav>
-
-<main>
-
-  <!-- HERO -->
-  <section class="rcr-hero">
-    <div class="container">
-      <div class="row align-items-center g-4 g-lg-5">
-
-        <div class="col-lg-7">
-          <span class="rcr-hero-kicker">Barbería & salón con estilo, precisión y trato premium</span>
-
-          <h1 class="rcr-hero-title">
-            Tu imagen merece más que un corte.
-            <span>Vive la experiencia RCR.</span>
-          </h1>
-
-          <p class="rcr-hero-text">
-            En RCR Barber Shop combinamos técnica, asesoría de imagen y atención personalizada
-            para que cada visita se sienta como un verdadero upgrade en tu estilo.
-          </p>
-
-          <div class="rcr-hero-actions">
-            <button
-              class="anywhere-book-now-button btn btn-warning btn-lg fw-semibold"
-              data-booking-url="https://rcr-barber-shop.setmore.com"
-              data-new-tab="false">
-              <i class="bi bi-calendar-check me-2"></i>Haz tu cita
-            </button>
-
-            <a href="Services.html" class="btn btn-outline-light btn-lg fw-semibold">
-              Ver servicios
-            </a>
-          </div>
-
-          <div class="rcr-hero-trust">
-            <span><i class="bi bi-scissors me-2"></i>Cortes con precisión</span>
-            <span><i class="bi bi-stars me-2"></i>Asesoría de imagen</span>
-            <span><i class="bi bi-person-check me-2"></i>Atención personalizada</span>
-          </div>
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6">
+        <div class="text-uppercase small fw-semibold text-warning mb-2" data-i18n="star_tag">
+          Star Service
         </div>
 
-        <div class="col-lg-5">
-          <div class="rcr-hero-card">
-            <div class="rcr-hero-card-top">
-              <span class="rcr-hero-badge">RCR Signature Experience</span>
-            </div>
-
-            <h2>Más que barbería</h2>
-
-            <p>
-              Un espacio donde el estilo, el detalle y el buen trato se combinan para
-              ayudarte a verte y sentirte en tu mejor versión.
-            </p>
-
-            <div class="rcr-hero-points">
-              <div class="rcr-hero-point">
-                <i class="bi bi-check-circle-fill"></i>
-                <span>Corte caballero y niño</span>
-              </div>
-
-              <div class="rcr-hero-point">
-                <i class="bi bi-check-circle-fill"></i>
-                <span>Barba y barba premium</span>
-              </div>
-
-              <div class="rcr-hero-point">
-                <i class="bi bi-check-circle-fill"></i>
-                <span>Servicios para dama con cita previa</span>
-              </div>
-            </div>
-
-            <div class="rcr-hero-mini-stats">
-              <div class="rcr-mini-stat">
-                <strong>Premium</strong>
-                <span>Atención</span>
-              </div>
-              <div class="rcr-mini-stat">
-                <strong>Style</strong>
-                <span>Asesoría</span>
-              </div>
-              <div class="rcr-mini-stat">
-                <strong>RCR</strong>
-                <span>Experiencia</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <div class="container my-4">
-
-  <div class="my-4">
-    <section class="gallery">
-      <h2 class="gallery-title">Atención profesional para tus necesidades de imagen</h2>
-
-      <div class="carousel" id="carousel">
-        <button class="car-btn prev" aria-label="Anterior"></button>
-
-        <div class="viewer" id="viewer">
-          <img src="./Images/PHOTO-2026-03-08-14-03-09 1.jpg" alt="Estilo 1">
-          <img src="./Images/PHOTO-2026-03-08-14-03-09 2.jpg" alt="Estilo 2">
-          <img src="./Images/PHOTO-2026-03-08-14-03-09 3.jpg" alt="Estilo 3">
-          <img src="./Images/PHOTO-2026-03-08-14-03-09 4.jpg" alt="Estilo 4">
-          <img src="./Images/PHOTO-2026-03-08-14-03-09.jpg" alt="Estilo 5">
-          <img src="./Images/PHOTO-2026-03-08-14-03-10.jpg" alt="Estilo 6">
-          <img src="./Images/Corte.png" alt="Estilo 7">
-          <img src="./Borradores/Balayage.JPG" alt="Estilo 8">
-          <img src="./Borradores/Nanoplastia.JPG" alt="Estilo 9">
-        </div>
-
-        <button class="car-btn next" aria-label="Siguiente"></button>
-
-        <div class="counter" id="counter">1 / 9</div>
-      </div>
-
-      <div class="thumbs" id="thumbs">
-        <img src="./Images/PHOTO-2026-03-08-14-03-09 1.jpg" data-i="0" alt="thumb 1">
-        <img src="./Images/PHOTO-2026-03-08-14-03-09 2.jpg" data-i="1" alt="thumb 2">
-        <img src="./Images/PHOTO-2026-03-08-14-03-09 3.jpg" data-i="2" alt="thumb 3">
-        <img src="./Images/PHOTO-2026-03-08-14-03-09 4.jpg" data-i="3" alt="thumb 4">
-        <img src="./Images/PHOTO-2026-03-08-14-03-09.jpg" data-i="4" alt="thumb 5">
-        <img src="./Images/PHOTO-2026-03-08-14-03-10.jpg" data-i="5" alt="thumb 6">
-        <img src="./Images/Corte.png" data-i="6" alt="thumb 7">
-        <img src="./Borradores/Balayage.JPG" data-i="7" alt="thumb 8">
-        <img src="./Borradores/Nanoplastia.JPG" data-i="8" alt="thumb 9">
-      </div>
-    </section>
-  </div>
-
-  <div class="card bg-dark text-white border-warning mt-4 services-ladies-card">
-    <div class="card-body text-center p-4 p-md-5">
-
-      <div class="mb-3">
-        <i class="bi bi-stars ladies-icon"></i>
-      </div>
-
-      <h3 class="mb-2" style="font-family:'Cinzel'; color:#D4BA67;">
-        También contamos con servicios para dama
-      </h3>
-
-      <p class="mb-3" style="font-family:'Montserrat';">
-        Aunque RCR es un <b>barbershop</b> especializado en caballeros,
-        también ofrecemos atención para dama <b>únicamente con previa cita</b>.
-      </p>
-
-      <div class="d-flex flex-wrap justify-content-center gap-2 mb-3">
-        <span class="badge rounded-pill text-bg-dark border border-warning px-3 py-2">Balayage</span>
-        <span class="badge rounded-pill text-bg-dark border border-warning px-3 py-2">Nanoplastia</span>
-        <span class="badge rounded-pill text-bg-dark border border-warning px-3 py-2">Trenzas</span>
-      </div>
-
-      <p class="small mb-4 ladies-note">
-        Consulta disponibilidad y agenda tu cita con anticipación.
-      </p>
-
-      <button
-        class="anywhere-book-now-button btn btn-warning btn-lg fw-semibold"
-        data-booking-url="https://rcr-barber-shop.setmore.com"
-        data-new-tab="false">
-        Agendar servicio
-      </button>
-
-    </div>
-  </div>
-
-  <section class="container my-5">
-    <div class="card bg-dark text-white border-warning">
-      <div class="card-body text-center p-4">
-
-        <h2 class="mb-2" style="font-family:'Cinzel'; color:#D4BA67;">
-          Queremos conocer tu opinión
+        <h2 class="fw-bold mb-3" data-i18n="star_h2">
+          Launch 72H
         </h2>
 
-        <p class="mb-4" style="font-family:'Montserrat';">
-          Tu experiencia nos ayuda a mejorar y seguir ofreciendo el mejor servicio.
+        <p class="text-muted mb-4" data-i18n="star_lead">
+          Need a professional website fast? Launch 72H is our rapid website service designed for small businesses that need to get online quickly without sacrificing quality.
         </p>
 
-        <div class="row g-4 justify-content-center">
+        <ul class="list-unstyled mb-4">
+          <li class="d-flex gap-2 mb-2">
+            <i class="bi bi-check-circle-fill text-dark"></i>
+            <span data-i18n="star_b1">Professional website delivered in 72 hours</span>
+          </li>
+          <li class="d-flex gap-2 mb-2">
+            <i class="bi bi-check-circle-fill text-dark"></i>
+            <span data-i18n="star_b2">Mobile-friendly and conversion-focused</span>
+          </li>
+          <li class="d-flex gap-2 mb-2">
+            <i class="bi bi-check-circle-fill text-dark"></i>
+            <span data-i18n="star_b3">Ideal for businesses that need results fast</span>
+          </li>
+        </ul>
 
-          <div class="col-md-5">
-            <a href="https://forms.gle/G6pdmRBXSp6LeKgr6" target="_blank" class="text-decoration-none">
-              <div class="card h-100 bg-black text-white border-warning review-card">
-                <div class="card-body text-center p-4">
-                  <img src="./Images/Logo_RCR_2026_SinFondo.png" width="80" class="mb-3" alt="RCR Logo">
-
-                  <h4 style="font-family:'Cinzel'; color:#D4BA67;">
-                    Responder encuesta
-                  </h4>
-
-                  <p class="small">
-                    Queremos conocer tu opinión sobre tu experiencia en RCR.
-                  </p>
-                </div>
-              </div>
-            </a>
-          </div>
-
-          <div class="col-md-5">
-            <a href="https://www.google.com/search?hl=en-CA&gl=ca&q=RCR+Barber%C3%ADa+Sal%C3%B3n,+Atenas,+Jerez+101+B,+Los+Sauces,+76114+Santiago+de+Quer%C3%A9taro,+Qro.,+Mexico&ludocid=10896036416418766935&lsig=AB86z5VZacI5tAJtuzdIunoeFj1o&hl=en&gl=CA#" target="_blank" class="text-decoration-none">
-              <div class="card h-100 bg-black text-white border-warning review-card">
-                <div class="card-body text-center p-4">
-                  <img src="./Images/finalgooglemaps.png" width="80" class="mb-3" alt="Google Maps">
-
-                  <h4 style="font-family:'Cinzel'; color:#D4BA67;">
-                    Escribir reseña
-                  </h4>
-
-                  <p class="small">
-                    Comparte tu experiencia en Google y ayuda a otros clientes.
-                  </p>
-                </div>
-              </div>
-            </a>
-          </div>
-
+        <div class="d-flex gap-2 flex-wrap">
+          <a href="./express.html" class="btn btn-dark" data-i18n="star_btn1">Explore Launch 72H</a>
+          <a href="./contact.html" class="btn btn-outline-dark" data-i18n="star_btn2">Start Your Project</a>
         </div>
       </div>
+
+      <div class="col-lg-6">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body p-4">
+            <div class="row g-3 text-center">
+              <div class="col-6">
+                <div class="p-3 border rounded-4 h-100">
+                  <i class="bi bi-lightning-charge fs-2 mb-2"></i>
+                  <div class="fw-semibold" data-i18n="star_card_1t">Fast Launch</div>
+                  <div class="text-muted small" data-i18n="star_card_1d">Go live in 72 hours.</div>
+                </div>
+              </div>
+
+              <div class="col-6">
+                <div class="p-3 border rounded-4 h-100">
+                  <i class="bi bi-phone fs-2 mb-2"></i>
+                  <div class="fw-semibold" data-i18n="star_card_2t">Mobile Ready</div>
+                  <div class="text-muted small" data-i18n="star_card_2d">Built for phones first.</div>
+                </div>
+              </div>
+
+              <div class="col-6">
+                <div class="p-3 border rounded-4 h-100">
+                  <i class="bi bi-search fs-2 mb-2"></i>
+                  <div class="fw-semibold" data-i18n="star_card_3t">SEO Basics</div>
+                  <div class="text-muted small" data-i18n="star_card_3d">Clean structure for search.</div>
+                </div>
+              </div>
+
+              <div class="col-6">
+                <div class="p-3 border rounded-4 h-100">
+                  <i class="bi bi-envelope fs-2 mb-2"></i>
+                  <div class="fw-semibold" data-i18n="star_card_4t">Lead Capture</div>
+                  <div class="text-muted small" data-i18n="star_card_4d">Turn visits into inquiries.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
-  </section>
-
- <section class="gaban-bar">
-  <div class="container">
-
-    <div class="gaban-bar-inner">
-
-      <span class="gaban-bar-text">
-        Sitio web desarrollado por
-      </span>
-
-      <a
-        href="https://gabansolutions.ca"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="gaban-bar-link"
-      >
-
-        <img
-          src="./Images/logo-gaban.png"
-          alt="GABAN Solutions"
-          class="gaban-bar-logo"
-        >
-
-      </a>
-
-      <a
-        href="https://gabansolutions.ca"
-        target="_blank"
-        class="gaban-bar-btn"
-      >
-        Ver servicios
-      </a>
-
-    </div>
-
   </div>
 </section>
 
-</main>
+<!-- SERVICES -->
+<section class="py-5">
+  <div class="container">
 
-<section class="footer text-center" style="font-family:'Cinzel'; color:white">
-  <a href="https://www.instagram.com/rcr_barbershop/" target="_blank">
-    <img src="./Images/Logo instagram.png" width="50" height="50" alt="Instagram">
-  </a>
+    <div class="text-center mb-5">
+      <h2 class="fw-bold" data-i18n="home_services_title">Our Services</h2>
+      <p class="text-muted" data-i18n="home_services_sub">
+        Practical digital solutions designed to help small businesses grow.
+      </p>
+    </div>
 
-  <a href="https://www.facebook.com/rcr.carlos.2025/" target="_blank">
-    <img src="./Images/Logo Facebook.png" width="50" height="50" alt="Facebook">
-  </a>
+    <div class="row g-4">
 
-  <br><br>
+      <div class="col-md-6 col-lg-3">
+        <div class="card h-100 border-0 shadow-sm text-center project-card">
+          <div class="card-body">
+            <div class="display-6 mb-3">💻</div>
+            <h5 class="fw-bold" data-i18n="svc_card_1t">Web Development</h5>
+            <p class="text-muted small" data-i18n="svc_card_1d">
+              Modern websites optimized for performance, SEO and user experience.
+            </p>
+          </div>
+        </div>
+      </div>
 
+      <div class="col-md-6 col-lg-3">
+        <div class="card h-100 border-0 shadow-sm text-center project-card">
+          <div class="card-body">
+            <div class="display-6 mb-3">⚙️</div>
+            <h5 class="fw-bold" data-i18n="svc_card_2t">Automation</h5>
+            <p class="text-muted small" data-i18n="svc_card_2d">
+              Smart systems that reduce repetitive work and save time.
+            </p>
+          </div>
+        </div>
+      </div>
 
-  <p class="mt-2">© 2026 Todos los derechos reservados</p>
+      <div class="col-md-6 col-lg-3">
+        <div class="card h-100 border-0 shadow-sm text-center project-card">
+          <div class="card-body">
+            <div class="display-6 mb-3">📈</div>
+            <h5 class="fw-bold" data-i18n="svc_card_3t">Digital Visibility</h5>
+            <p class="text-muted small" data-i18n="svc_card_3d">
+              Better structure, trust and discoverability for your business online.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-3">
+        <div class="card h-100 border-0 shadow-sm text-center project-card">
+          <div class="card-body">
+            <div class="display-6 mb-3">🧩</div>
+            <h5 class="fw-bold" data-i18n="svc_card_4t">Custom Solutions</h5>
+            <p class="text-muted small" data-i18n="svc_card_4d">
+              Practical digital tools built around your real business needs.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="text-center mt-4">
+      <a class="btn btn-dark" href="./services.html" data-i18n="home_services_btn">Explore All Services</a>
+    </div>
+  </div>
 </section>
 
+<!-- FEATURED WORK -->
+<section class="section bg-light">
+  <div class="container">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6 order-2 order-lg-1">
+        <div class="text-uppercase small fw-semibold text-warning mb-2" data-i18n="home_work_tag">
+          Featured Project
+        </div>
+
+        <h2 class="fw-bold mb-3" data-i18n="home_work_title">
+          Real work for real local businesses
+        </h2>
+
+        <p class="text-muted mb-4" data-i18n="home_work_text">
+          We build clean, practical websites that help local businesses look professional, earn trust and generate more inquiries.
+        </p>
+
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-body p-4">
+            <h3 class="h5 fw-bold mb-2" data-i18n="home_work_case_title">RCR Barber Shop</h3>
+            <p class="text-muted small mb-0" data-i18n="home_work_case_text">
+              Multi-page website with service presentation, booking support and a stronger digital presence for a local brand.
+            </p>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap">
+          <a class="btn btn-dark" href="./portfolio.html" data-i18n="home_work_btn">See case study</a>
+          <a class="btn btn-outline-dark" href="https://www.rcr-barbershop.com/" target="_blank" rel="noopener noreferrer" data-i18n="home_work_btn2">Visit website</a>
+        </div>
+      </div>
+
+      <div class="col-lg-6 order-1 order-lg-2">
+        <img
+          src="./Images/portfolio/CoverRCR.jpg"
+          class="img-fluid featured-project-img w-100"
+          alt="Preview of the RCR Barber Shop website built by GABAN Solutions Numériques"
+          loading="lazy"
+          decoding="async">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section bg-dark text-white">
+  <div class="container">
+    <div class="row align-items-center g-3">
+      <div class="col-lg-8">
+        <h2 class="fw-bold mb-2" data-i18n="home_bottom_title">Let’s build something that works for your business.</h2>
+        <p class="mb-0 text-white-50" data-i18n="home_bottom_text">Tell us what you need. We’ll recommend the simplest solution that gets results.</p>
+      </div>
+      <div class="col-lg-4 text-lg-end">
+        <a class="btn btn-light btn-lg" href="./contact.html" data-i18n="home_bottom_btn">Contact Us</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div id="site-footer"></div>
+
+<script src="./js/components.js"></script>
+<script src="./js/i18n.js"></script>
 <script>
-  const viewer = document.getElementById('viewer');
-  const thumbs = document.getElementById('thumbs');
-  const counter = document.getElementById('counter');
-  const slides = Array.from(viewer.querySelectorAll('img'));
-  const total = slides.length;
-
-  let current = 0;
-
-  function goTo(i){
-    current = Math.max(0, Math.min(total - 1, i));
-    viewer.scrollTo({ left: viewer.clientWidth * current, behavior: 'smooth' });
-    counter.textContent = (current + 1) + " / " + total;
-
-    thumbs.querySelectorAll('img').forEach(t => t.classList.remove('active'));
-    const activeThumb = thumbs.querySelector(`img[data-i="${current}"]`);
-    if(activeThumb) activeThumb.classList.add('active');
-  }
-
-  document.querySelector('.car-btn.prev').addEventListener('click', () => goTo(current - 1));
-  document.querySelector('.car-btn.next').addEventListener('click', () => goTo(current + 1));
-
-  thumbs.addEventListener('click', (e) => {
-    if(e.target.tagName === 'IMG'){
-      goTo(parseInt(e.target.dataset.i, 10));
-    }
-  });
-
-  viewer.addEventListener('scroll', () => {
-    const i = Math.round(viewer.scrollLeft / viewer.clientWidth);
-    if(i !== current){
-      current = i;
-      counter.textContent = (current + 1) + " / " + total;
-      thumbs.querySelectorAll('img').forEach(t => t.classList.remove('active'));
-      const activeThumb = thumbs.querySelector(`img[data-i="${current}"]`);
-      if(activeThumb) activeThumb.classList.add('active');
-    }
-  });
-
-  goTo(0);
+  mountSharedLayout("home");
+  initI18n("home");
 </script>
-
-<div class="mobile-book-bar d-lg-none">
-  <button
-    class="anywhere-book-now-button btn btn-warning mobile-book-btn fw-semibold"
-    data-booking-url="https://rcr-barber-shop.setmore.com"
-    data-new-tab="false">
-    <i class="bi bi-calendar-check me-2"></i>Agendar cita
-  </button>
-</div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script id="anywhere_book_now_script" src="https://assets.setmore.com/integration/book-now/live/v1/anywhere-book-now.js"></script>
-
 </body>
 </html>
