@@ -347,3 +347,228 @@ transition:.2s;
 background:#b89a4d;
 color:#111;
 }
+
+/* ===============================
+RCR HERO
+=============================== */
+
+.rcr-hero{
+  position: relative;
+  overflow: hidden;
+  padding: 72px 0 48px;
+  background:
+    radial-gradient(circle at top left, rgba(212,186,103,0.16), transparent 34%),
+    radial-gradient(circle at bottom right, rgba(212,186,103,0.10), transparent 28%),
+    linear-gradient(180deg, #111111 0%, #181818 52%, #111111 100%);
+  border-bottom: 1px solid rgba(212,186,103,.18);
+}
+
+.rcr-hero::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size: 26px 26px;
+  opacity:.18;
+  pointer-events:none;
+}
+
+.rcr-hero .container{
+  position:relative;
+  z-index:1;
+}
+
+.rcr-hero-kicker{
+  display:inline-block;
+  margin-bottom:16px;
+  padding:8px 14px;
+  border:1px solid rgba(212,186,103,.35);
+  border-radius:999px;
+  background:rgba(212,186,103,.08);
+  color:#E6D39A;
+  font-family:'Montserrat', sans-serif;
+  font-size:.88rem;
+  font-weight:600;
+  letter-spacing:.02em;
+}
+
+.rcr-hero-title{
+  margin:0 0 18px 0;
+  color:#fff;
+  font-family:'Cinzel', serif;
+  font-size:clamp(2.3rem, 5vw, 4.6rem);
+  line-height:1.06;
+  letter-spacing:.01em;
+  max-width:760px;
+}
+
+.rcr-hero-title span{
+  display:block;
+  color:#D4BA67;
+}
+
+.rcr-hero-text{
+  max-width:680px;
+  margin-bottom:28px;
+  color:rgba(255,255,255,.82);
+  font-family:'Montserrat', sans-serif;
+  font-size:1.08rem;
+  line-height:1.8;
+}
+
+.rcr-hero-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:14px;
+  margin-bottom:28px;
+}
+
+.rcr-hero-actions .btn-outline-light{
+  border-width:1px;
+}
+
+.rcr-hero-trust{
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+}
+
+.rcr-hero-trust span{
+  display:inline-flex;
+  align-items:center;
+  padding:10px 14px;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:999px;
+  background:rgba(255,255,255,.04);
+  color:#f2f2f2;
+  font-family:'Montserrat', sans-serif;
+  font-size:.95rem;
+}
+
+.rcr-hero-card{
+  position:relative;
+  padding:28px;
+  border:1px solid rgba(212,186,103,.30);
+  border-radius:24px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.05) 0%, rgba(255,255,255,.02) 100%);
+  backdrop-filter: blur(10px);
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.38),
+    inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+.rcr-hero-card-top{
+  margin-bottom:14px;
+}
+
+.rcr-hero-badge{
+  display:inline-block;
+  padding:7px 12px;
+  border-radius:999px;
+  background:#D4BA67;
+  color:#111;
+  font-family:'Montserrat', sans-serif;
+  font-size:.8rem;
+  font-weight:700;
+}
+
+.rcr-hero-card h2{
+  margin-bottom:12px;
+  color:#fff;
+  font-family:'Cinzel', serif;
+  font-size:1.9rem;
+}
+
+.rcr-hero-card p{
+  margin-bottom:22px;
+  color:rgba(255,255,255,.78);
+  font-family:'Montserrat', sans-serif;
+  line-height:1.75;
+}
+
+.rcr-hero-points{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  margin-bottom:24px;
+}
+
+.rcr-hero-point{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  color:#fff;
+  font-family:'Montserrat', sans-serif;
+}
+
+.rcr-hero-point i{
+  color:#D4BA67;
+}
+
+.rcr-hero-mini-stats{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:12px;
+}
+
+.rcr-mini-stat{
+  padding:14px 10px;
+  text-align:center;
+  border:1px solid rgba(212,186,103,.20);
+  border-radius:16px;
+  background:#101010;
+}
+
+.rcr-mini-stat strong{
+  display:block;
+  color:#D4BA67;
+  font-family:'Cinzel', serif;
+  font-size:1.05rem;
+}
+
+.rcr-mini-stat span{
+  color:rgba(255,255,255,.68);
+  font-family:'Montserrat', sans-serif;
+  font-size:.82rem;
+}
+
+@media (max-width: 991.98px){
+  .rcr-hero{
+    padding:56px 0 34px;
+  }
+
+  .rcr-hero-card{
+    margin-top:8px;
+  }
+}
+
+@media (max-width: 575.98px){
+  .rcr-hero-title{
+    font-size:2.2rem;
+  }
+
+  .rcr-hero-text{
+    font-size:1rem;
+    line-height:1.7;
+  }
+
+  .rcr-hero-actions{
+    flex-direction:column;
+  }
+
+  .rcr-hero-actions .btn{
+    width:100%;
+  }
+
+  .rcr-hero-mini-stats{
+    grid-template-columns:1fr;
+  }
+
+  .rcr-hero-card{
+    padding:22px;
+    border-radius:20px;
+  }
+}
