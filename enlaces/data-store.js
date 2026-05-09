@@ -57,7 +57,10 @@ export async function getStorage() {
 
 // ---------- Default data ----------
 async function loadDefaults() {
-  const res = await fetch("./data.default.json", { cache: "no-cache" });
+  // Use a relative path from this script's location to find the JSON.
+  // This is more robust than a hardcoded absolute path.
+  const url = new URL("./data.default.json", import.meta.url);
+  const res = await fetch(url, { cache: "no-cache" });
   if (!res.ok) throw new Error("Could not load data.default.json");
   return res.json();
 }
