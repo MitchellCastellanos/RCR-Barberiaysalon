@@ -6,7 +6,7 @@
 // ============================================================
 
 import { FIREBASE_ENABLED } from "../firebase-config.js";
-import { fetchData, saveData, getAuth, getStorage } from "../data-store.js";
+import { fetchData, saveData, getAuth, getStorage, getDefaults } from "../data-store.js";
 
 const $  = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
@@ -142,11 +142,24 @@ async function startApp() {
 
 async function loadData() {
   try {
-    currentData = await fetchData();
-    workingData = deepClone(currentData);
+    const { data, fromRemote } = await fetchData();
+    currentData = data;
+    workingData = deepClone(data);
     renderAll();
     dirty = false;
     refreshSaveBar();
+
+    // First-time seed: if Firestore has no document yet, write the
+    // current defaults so the live page reads from Firestore from now on.
+    if (!fromRemote) {
+      try {
+        await saveData(currentData);
+        toast("Datos iniciales sembrados en Firebase. ¡Edita lo que necesites!", "success");
+      } catch (err) {
+        // Likely a permissions issue — show a friendly hint.
+        toast("No pude sembrar los datos: " + err.message, "error");
+      }
+    }
   } catch (err) {
     toast("Error cargando datos: " + err.message, "error");
   }

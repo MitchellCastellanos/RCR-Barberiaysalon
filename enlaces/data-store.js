@@ -134,19 +134,24 @@ export async function subscribeData(onData) {
   };
 }
 
-/** One-shot read (used by the admin to populate forms). */
+/** One-shot read. Returns { data, fromRemote }. */
 export async function fetchData() {
   const defaults = await loadDefaults();
-  if (!FIREBASE_ENABLED) return defaults;
+  if (!FIREBASE_ENABLED) return { data: defaults, fromRemote: false };
   try {
     const { db, doc, getDoc } = await getFirestore();
     const snap = await getDoc(doc(db, "config", "site"));
-    if (!snap.exists()) return defaults;
-    return mergeWithDefaults(defaults, snap.data());
+    if (!snap.exists()) return { data: defaults, fromRemote: false };
+    return { data: mergeWithDefaults(defaults, snap.data()), fromRemote: true };
   } catch (err) {
     console.warn("[rcr] fetchData fell back to defaults:", err.message);
-    return defaults;
+    return { data: defaults, fromRemote: false };
   }
+}
+
+/** Returns the current defaults loaded from data.default.json. */
+export async function getDefaults() {
+  return loadDefaults();
 }
 
 /** Persist the entire config doc. Admin-only. */
