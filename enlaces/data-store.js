@@ -57,7 +57,8 @@ export async function getStorage() {
 
 // ---------- Default data ----------
 async function loadDefaults() {
-  const res = await fetch("./data.default.json", { cache: "no-cache" });
+  // Use absolute path so it works from /enlaces/ or /admin/
+  const res = await fetch("/enlaces/data.default.json", { cache: "no-cache" });
   if (!res.ok) throw new Error("Could not load data.default.json");
   return res.json();
 }
