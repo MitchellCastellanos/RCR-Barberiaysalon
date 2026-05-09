@@ -111,16 +111,7 @@
       <!-- ───────────── LINKS ───────────── -->
       <section class="links-section" aria-label="Enlaces principales">
 
-        <a href="#" target="_blank" rel="noopener" class="link-btn whatsapp reveal" style="--d:320ms" data-link="whatsappBtn">
-          <span class="btn-icon"><i class="fab fa-whatsapp"></i></span>
-          <span class="btn-body">
-            <span class="btn-label">WhatsApp</span>
-            <span class="btn-meta">Chatea con nosotros</span>
-          </span>
-          <span class="btn-arrow"><i class="fas fa-chevron-right"></i></span>
-        </a>
-
-        <a href="#" target="_blank" rel="noopener" class="link-btn instagram reveal" style="--d:380ms" data-link="instagram">
+        <a href="#" target="_blank" rel="noopener" class="link-btn instagram reveal" style="--d:320ms" data-link="instagram">
           <span class="btn-icon"><i class="fab fa-instagram"></i></span>
           <span class="btn-body">
             <span class="btn-label">Instagram <span class="badge badge-popular">POPULAR</span></span>
@@ -289,10 +280,8 @@
 
       // Link bindings
       const waBooking = buildWa(links.whatsapp, links.whatsappBookingMessage);
-      const waGeneric = buildWa(links.whatsapp, links.whatsappGenericMessage);
       const linkMap = {
         bookingCta:  waBooking,
-        whatsappBtn: waGeneric,
         instagram:   links.instagram,
         facebook:    links.facebook,
         website:     links.website,
