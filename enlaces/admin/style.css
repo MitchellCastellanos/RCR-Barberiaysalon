@@ -24,6 +24,10 @@
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
+/* `.login-screen { display:flex }` otherwise overrides the UA [hidden] rule — login stays visible after auth */
+[hidden] {
+  display: none !important;
+}
 html, body { min-height: 100%; background: var(--bg-0); color: var(--text); }
 body {
   font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
