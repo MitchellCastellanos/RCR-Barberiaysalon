@@ -1,0 +1,16 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Gallery: public read, authenticated upload (size + type limited).
+    match /gallery/{file} {
+      allow read: if true;
+      allow write: if request.auth != null
+        && request.resource.size < 10 * 1024 * 1024 // 10 MB
+        && request.resource.contentType.matches('image/.*');
+    }
+    // Lock everything else.
+    match /{path=**} {
+      allow read, write: if false;
+    }
+  }
+}

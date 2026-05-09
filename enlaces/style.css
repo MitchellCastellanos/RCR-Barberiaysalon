@@ -696,38 +696,31 @@ body {
 }
 
 /* ============================================================
-   SERVICES
+   PRECIOS
    ============================================================ */
-.services-section {
+.prices-section {
   padding: 0 20px;
   margin-bottom: 24px;
 }
-.services-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 9px;
+.prices-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
 }
-.service-item {
+.price-item {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 12px 12px 12px 14px;
+  gap: 14px;
+  padding: 13px 16px 13px 18px;
   background: rgba(212, 186, 103, 0.04);
   border: 1px solid rgba(212, 186, 103, 0.18);
   border-radius: 12px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: var(--text);
-  letter-spacing: 0.01em;
   transition: background 0.2s var(--easing), border-color 0.2s var(--easing), transform 0.2s var(--easing);
 }
-.service-item:hover {
-  background: rgba(212, 186, 103, 0.09);
-  border-color: rgba(212, 186, 103, 0.45);
-  transform: translateY(-1px);
-}
-.service-bullet {
+.price-item::before {
+  content: "";
   position: absolute;
   left: 0; top: 50%;
   transform: translateY(-50%);
@@ -735,7 +728,162 @@ body {
   background: linear-gradient(180deg, transparent, var(--gold), transparent);
   border-radius: 2px;
 }
-.service-icon { color: var(--gold); flex-shrink: 0; }
+.price-item:hover {
+  background: rgba(212, 186, 103, 0.09);
+  border-color: rgba(212, 186, 103, 0.45);
+  transform: translateY(-1px);
+}
+.price-main { flex: 1; min-width: 0; }
+.price-name {
+  font-family: 'Cinzel', serif;
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+}
+.price-desc {
+  margin-top: 3px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+}
+.price-note {
+  margin-top: 4px;
+  font-size: 0.72rem;
+  color: var(--gold-light);
+  font-style: italic;
+  letter-spacing: 0.02em;
+}
+.price-tag {
+  flex-shrink: 0;
+  font-family: 'Cinzel', serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  background: linear-gradient(180deg, var(--gold-bright), var(--gold) 60%, var(--gold-deep));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  padding: 6px 12px;
+  border: 1px solid rgba(212, 186, 103, 0.3);
+  border-radius: 999px;
+  background-color: rgba(212, 186, 103, 0.05);
+}
+.prices-empty,
+.prices-note {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--text-faint);
+  font-style: italic;
+  letter-spacing: 0.02em;
+}
+
+/* ============================================================
+   GALERÍA
+   ============================================================ */
+.gallery-section {
+  padding: 0 20px;
+  margin-bottom: 26px;
+}
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.gallery-cell {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(212, 186, 103, 0.2);
+  background: #0A0A0A;
+  cursor: zoom-in;
+  padding: 0;
+  transition: transform 0.22s var(--easing), border-color 0.22s var(--easing), box-shadow 0.22s var(--easing);
+}
+.gallery-cell img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s var(--easing), filter 0.3s var(--easing);
+  filter: saturate(0.95);
+}
+.gallery-cell:hover {
+  transform: translateY(-2px);
+  border-color: var(--gold);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.5), 0 0 16px rgba(212,186,103,0.2);
+  z-index: 2;
+}
+.gallery-cell:hover img {
+  transform: scale(1.08);
+  filter: saturate(1.1);
+}
+.gallery-cell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 60%, rgba(0,0,0,0.4));
+  opacity: 0;
+  transition: opacity 0.3s var(--easing);
+  pointer-events: none;
+}
+.gallery-cell:hover::after { opacity: 1; }
+
+/* ─── Lightbox ─── */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 24px;
+  animation: lbFade 0.25s var(--easing);
+}
+@keyframes lbFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.lightbox[hidden] { display: none; }
+.lightbox-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 12px;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(212,186,103,0.3);
+}
+.lightbox-close,
+.lightbox-prev,
+.lightbox-next {
+  position: absolute;
+  background: rgba(20,20,20,0.7);
+  border: 1px solid rgba(212,186,103,0.3);
+  color: var(--gold-light);
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s var(--easing), border-color 0.2s var(--easing), transform 0.2s var(--easing);
+}
+.lightbox-close { top: 20px; right: 20px; }
+.lightbox-prev  { left: 20px; top: 50%; transform: translateY(-50%); }
+.lightbox-next  { right: 20px; top: 50%; transform: translateY(-50%); }
+.lightbox-close:hover,
+.lightbox-prev:hover,
+.lightbox-next:hover {
+  background: rgba(212,186,103,0.2);
+  border-color: var(--gold);
+}
+.lightbox-prev:hover { transform: translateY(-50%) scale(1.08); }
+.lightbox-next:hover { transform: translateY(-50%) scale(1.08); }
 
 /* ============================================================
    REVIEW
@@ -830,6 +978,7 @@ body {
 }
 .hours-day { color: var(--text-muted); letter-spacing: 0.02em; }
 .hours-time { color: var(--gold-light); font-weight: 600; letter-spacing: 0.01em; }
+.hours-closed { color: #E04848; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; font-size: 0.8em; }
 
 .footer-copy {
   font-size: 0.72rem;
@@ -890,10 +1039,12 @@ body {
   .avatar { width: 110px; height: 110px; }
   .featured-cta { padding: 14px 14px; margin: 4px 14px 16px; }
   .cta-title { font-size: 1rem; }
-  .links-section, .services-section, .review-section { padding-left: 14px; padding-right: 14px; }
+  .links-section, .prices-section, .gallery-section, .review-section { padding-left: 14px; padding-right: 14px; }
   .link-btn { padding: 12px 14px; }
   .btn-icon { width: 38px; height: 38px; font-size: 1.05rem; }
-  .services-grid { grid-template-columns: 1fr; }
+  .gallery-grid { grid-template-columns: repeat(3, 1fr); gap: 5px; }
+  .price-name { font-size: 0.92rem; }
+  .price-tag { font-size: 0.95rem; padding: 5px 10px; }
   .hero { padding: 28px 18px 20px; }
 }
 
