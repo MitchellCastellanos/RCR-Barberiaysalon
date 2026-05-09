@@ -11,14 +11,14 @@
 // ============================================================
 
 export const firebaseConfig = {
-  apiKey:            "REPLACE_WITH_YOUR_API_KEY",
-  authDomain:        "REPLACE_WITH_YOUR_PROJECT.firebaseapp.com",
-  projectId:         "REPLACE_WITH_YOUR_PROJECT_ID",
-  storageBucket:     "REPLACE_WITH_YOUR_PROJECT.appspot.com",
-  messagingSenderId: "REPLACE_WITH_YOUR_SENDER_ID",
-  appId:             "REPLACE_WITH_YOUR_APP_ID"
+  apiKey:            "AIzaSyBqHe5V0YB0cMu71J_s1aR6O4t_9bAHe0g",
+  authDomain:        "rcr-barbershop.firebaseapp.com",
+  projectId:         "rcr-barbershop",
+  storageBucket:     "rcr-barbershop.firebasestorage.app",
+  messagingSenderId: "1077003368186",
+  appId:             "1:1077003368186:web:776ec85da3b912773b3b43"
 };
 
 // Set to false to disable Firebase entirely and use only the defaults
 // from data.default.json (useful while you finish Firebase setup).
-export const FIREBASE_ENABLED = false;
+export const FIREBASE_ENABLED = true;
