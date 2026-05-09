@@ -188,6 +188,18 @@
           <input type="number" step="0.1" min="0" max="5" data-business-key="rating" />
         </label>
       </div>
+
+      <div class="danger-zone">
+        <h3 class="danger-title"><i class="fas fa-triangle-exclamation"></i> Zona de mantenimiento</h3>
+        <p class="danger-help">
+          Esto reemplaza <b>todo</b> (servicios, precios, galería, horarios, enlaces y datos)
+          con los valores predeterminados que vienen en el repo. Las fotos subidas
+          a Firebase Storage NO se borran; sólo se quitan de la galería visible.
+        </p>
+        <button class="btn btn-danger" id="restoreDefaultsBtn">
+          <i class="fas fa-rotate-left"></i> Restaurar valores por defecto
+        </button>
+      </div>
     </section>
 
   </main>

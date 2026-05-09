@@ -117,6 +117,7 @@ async function startApp() {
 
   $("#saveBtn").onclick = onSaveAll;
   $("#discardBtn").onclick = onDiscardAll;
+  $("#restoreDefaultsBtn").onclick = onRestoreDefaults;
 
   $$('[data-link-key]').forEach(input => {
     input.addEventListener("input", () => {
@@ -464,6 +465,26 @@ function onDiscardAll() {
   refreshSaveBar();
   renderAll();
   toast("Cambios descartados.", "");
+}
+
+async function onRestoreDefaults() {
+  if (!confirm(
+    "Vas a REEMPLAZAR todo lo que está en el panel con los valores por " +
+    "defecto del repo (servicios, precios, galería, horarios, enlaces).\n\n" +
+    "Las fotos que ya subiste seguirán en Firebase Storage; sólo se quitan " +
+    "de la galería visible (puedes volverlas a agregar manualmente).\n\n" +
+    "¿Continuar?"
+  )) return;
+  try {
+    const defaults = await getDefaults();
+    workingData = deepClone(defaults);
+    if (!workingData._pendingDeletions) workingData._pendingDeletions = [];
+    markDirty();
+    renderAll();
+    toast("Defaults cargados. Revisa y dale 'Guardar cambios' para aplicar.", "success");
+  } catch (err) {
+    toast("Error cargando defaults: " + err.message, "error");
+  }
 }
 
 function markDirty() {
