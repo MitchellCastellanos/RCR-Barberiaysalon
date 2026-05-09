@@ -66,6 +66,7 @@
         href="https://wa.me/524423536769?text=Hola%20RCR%2C%20quiero%20agendar%20una%20cita"
         target="_blank"
         rel="noopener"
+        data-link="bookingCta"
         class="btn btn-warning fw-semibold d-none d-lg-inline-flex">
         <i class="bi bi-whatsapp me-2"></i>Haz tu cita
       </a>
@@ -98,6 +99,7 @@
               href="https://wa.me/524423536769?text=Hola%20RCR%2C%20quiero%20agendar%20una%20cita"
               target="_blank"
               rel="noopener"
+              data-link="bookingCta"
               class="btn btn-warning btn-lg fw-semibold">
               <i class="bi bi-whatsapp me-2"></i>Haz tu cita
             </a>
@@ -235,6 +237,7 @@
         href="https://wa.me/524423536769?text=Hola%20RCR%2C%20quiero%20agendar%20un%20servicio%20para%20dama"
         target="_blank"
         rel="noopener"
+        data-link="bookingLadiesCta"
         class="btn btn-warning btn-lg fw-semibold">
         <i class="bi bi-whatsapp me-2"></i>Agendar servicio
       </a>
@@ -337,11 +340,11 @@
 </main>
 
 <section class="footer text-center" style="font-family:'Cinzel'; color:white">
-  <a href="https://www.instagram.com/rcr_barbershop/" target="_blank">
+  <a href="https://www.instagram.com/rcr_barbershop/" target="_blank" rel="noopener" data-link="instagram">
     <img src="./Images/Logo instagram.png" width="50" height="50" alt="Instagram">
   </a>
 
-  <a href="https://www.facebook.com/rcr.carlos.2025/" target="_blank">
+  <a href="https://www.facebook.com/rcr.carlos.2025/" target="_blank" rel="noopener" data-link="facebook">
     <img src="./Images/Logo Facebook.png" width="50" height="50" alt="Facebook">
   </a>
 
@@ -352,52 +355,77 @@
 </section>
 
 <script>
-  const viewer = document.getElementById('viewer');
-  const thumbs = document.getElementById('thumbs');
-  const counter = document.getElementById('counter');
-  const slides = Array.from(viewer.querySelectorAll('img'));
-  const total = slides.length;
+  // Carousel — re-callable so site-bind.js can re-init after the gallery
+  // is rebuilt from Firestore data.
+  (function () {
+    const viewer = document.getElementById('viewer');
+    const thumbs = document.getElementById('thumbs');
+    const counter = document.getElementById('counter');
+    if (!viewer || !thumbs) return;
 
-  let current = 0;
+    let slides = [];
+    let total = 0;
+    let current = 0;
+    let bound = false;
 
-  function goTo(i){
-    current = Math.max(0, Math.min(total - 1, i));
-    viewer.scrollTo({ left: viewer.clientWidth * current, behavior: 'smooth' });
-    counter.textContent = (current + 1) + " / " + total;
-
-    thumbs.querySelectorAll('img').forEach(t => t.classList.remove('active'));
-    const activeThumb = thumbs.querySelector(`img[data-i="${current}"]`);
-    if(activeThumb) activeThumb.classList.add('active');
-  }
-
-  document.querySelector('.car-btn.prev').addEventListener('click', () => goTo(current - 1));
-  document.querySelector('.car-btn.next').addEventListener('click', () => goTo(current + 1));
-
-  thumbs.addEventListener('click', (e) => {
-    if(e.target.tagName === 'IMG'){
-      goTo(parseInt(e.target.dataset.i, 10));
+    function refresh() {
+      slides = Array.from(viewer.querySelectorAll('img'));
+      total = slides.length;
+      current = Math.min(current, Math.max(0, total - 1));
+      if (counter) counter.textContent = total ? `${current + 1} / ${total}` : '';
     }
-  });
 
-  viewer.addEventListener('scroll', () => {
-    const i = Math.round(viewer.scrollLeft / viewer.clientWidth);
-    if(i !== current){
-      current = i;
-      counter.textContent = (current + 1) + " / " + total;
+    function goTo(i) {
+      if (total === 0) return;
+      current = Math.max(0, Math.min(total - 1, i));
+      viewer.scrollTo({ left: viewer.clientWidth * current, behavior: 'smooth' });
+      if (counter) counter.textContent = (current + 1) + " / " + total;
       thumbs.querySelectorAll('img').forEach(t => t.classList.remove('active'));
       const activeThumb = thumbs.querySelector(`img[data-i="${current}"]`);
-      if(activeThumb) activeThumb.classList.add('active');
+      if (activeThumb) activeThumb.classList.add('active');
     }
-  });
 
-  goTo(0);
+    function bindOnce() {
+      if (bound) return;
+      bound = true;
+      const prev = document.querySelector('.car-btn.prev');
+      const next = document.querySelector('.car-btn.next');
+      if (prev) prev.addEventListener('click', () => goTo(current - 1));
+      if (next) next.addEventListener('click', () => goTo(current + 1));
+      thumbs.addEventListener('click', (e) => {
+        if (e.target.tagName === 'IMG') goTo(parseInt(e.target.dataset.i, 10));
+      });
+      viewer.addEventListener('scroll', () => {
+        const i = Math.round(viewer.scrollLeft / viewer.clientWidth);
+        if (i !== current) {
+          current = i;
+          if (counter) counter.textContent = (current + 1) + " / " + total;
+          thumbs.querySelectorAll('img').forEach(t => t.classList.remove('active'));
+          const activeThumb = thumbs.querySelector(`img[data-i="${current}"]`);
+          if (activeThumb) activeThumb.classList.add('active');
+        }
+      });
+    }
+
+    function init() {
+      bindOnce();
+      refresh();
+      goTo(0);
+    }
+
+    window.__initCarousel = init;
+    init();
+  })();
 </script>
+
+<script type="module" src="./site-bind.js"></script>
 
 <div class="mobile-book-bar d-lg-none">
   <a
     href="https://wa.me/524423536769?text=Hola%20RCR%2C%20quiero%20agendar%20una%20cita"
     target="_blank"
     rel="noopener"
+    data-link="bookingCta"
     class="btn btn-warning mobile-book-btn fw-semibold">
     <i class="bi bi-whatsapp me-2"></i>Agendar cita
   </a>

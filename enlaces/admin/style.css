@@ -581,6 +581,32 @@ body {
 .toast-error   { border-color: rgba(224, 72, 72, 0.5); color: #F5C5C5; }
 
 /* ============================================================
+   DANGER ZONE
+   ============================================================ */
+.danger-zone {
+  margin-top: 24px;
+  padding: 18px;
+  border: 1px dashed rgba(224, 72, 72, 0.4);
+  border-radius: 14px;
+  background: rgba(224, 72, 72, 0.04);
+}
+.danger-title {
+  font-family: 'Cinzel', serif;
+  font-size: 0.92rem;
+  color: #F5C5C5;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.danger-title i { color: var(--danger); }
+.danger-help {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+
+/* ============================================================
    RESPONSIVE
    ============================================================ */
 @media (max-width: 720px) {

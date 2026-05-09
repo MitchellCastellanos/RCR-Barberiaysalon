@@ -19,21 +19,33 @@
     "reviewForm": "https://forms.gle/M6wTSV7KCRXuBDui7"
   },
   "hours": {
-    "1": { "open": "10:00", "close": "20:00", "closed": false },
-    "2": { "open": "10:00", "close": "20:00", "closed": false },
-    "3": { "open": "10:00", "close": "20:00", "closed": false },
-    "4": { "open": "10:00", "close": "20:00", "closed": false },
-    "5": { "open": "10:00", "close": "20:00", "closed": false },
-    "6": { "open": "10:00", "close": "20:00", "closed": false },
-    "0": { "open": "11:00", "close": "16:00", "closed": false }
+    "1": { "open": "11:00", "close": "20:00", "closed": false },
+    "2": { "open": "11:00", "close": "20:00", "closed": false },
+    "3": { "open": "11:00", "close": "20:00", "closed": false },
+    "4": { "open": "11:00", "close": "20:30", "closed": false },
+    "5": { "open": "11:00", "close": "20:00", "closed": false },
+    "6": { "open": "11:00", "close": "18:00", "closed": false },
+    "0": { "open": "11:00", "close": "18:00", "closed": false }
   },
   "services": [
-    { "id": "corte-caballero",  "name": "Corte de Cabello",      "description": "Corte personalizado a tijera o máquina",     "price": 150, "note": "", "icon": "scissors",  "order": 0, "active": true },
-    { "id": "barba",            "name": "Barba",                  "description": "Perfilado y arreglo de barba con toalla",    "price": 100, "note": "", "icon": "beard",     "order": 1, "active": true },
-    { "id": "fade",             "name": "Fade",                   "description": "Degradado limpio y preciso",                  "price": 180, "note": "", "icon": "fade",      "order": 2, "active": true },
-    { "id": "afeitado",         "name": "Afeitado Clásico",       "description": "Afeitado con navaja, toalla caliente",        "price": 150, "note": "", "icon": "razor",     "order": 3, "active": true },
-    { "id": "perfilado",        "name": "Perfilado",              "description": "Perfilado de líneas y detalle",               "price": 80,  "note": "", "icon": "perfilado", "order": 4, "active": true },
-    { "id": "tratamiento",      "name": "Tratamiento Capilar",    "description": "Hidratación y cuidado profundo del cabello", "price": 250, "note": "", "icon": "treatment", "order": 5, "active": true }
+    { "id": "corte-caballero",  "name": "Corte caballero",     "description": "Corte personalizado a tijera o máquina",     "price": 150, "note": "", "order": 0, "active": true },
+    { "id": "corte-nino",       "name": "Corte niño",           "description": "Corte para los más pequeños",                "price": 130, "note": "", "order": 1, "active": true },
+    { "id": "barba",            "name": "Barba",                "description": "Perfilado y arreglo de barba con toalla",    "price": 110, "note": "", "order": 2, "active": true },
+    { "id": "barba-premium",    "name": "Barba premium",        "description": "Barba completa con tratamiento y acabado",   "price": 160, "note": "", "order": 3, "active": true },
+    { "id": "fade",             "name": "Fade",                 "description": "Degradado limpio y preciso",                  "price": 180, "note": "", "order": 4, "active": true },
+    { "id": "afeitado",         "name": "Afeitado clásico",     "description": "Afeitado con navaja y toalla caliente",       "price": 150, "note": "", "order": 5, "active": true },
+    { "id": "perfilado",        "name": "Perfilado",            "description": "Perfilado de líneas y detalle",               "price": 80,  "note": "", "order": 6, "active": true },
+    { "id": "tratamiento",      "name": "Tratamiento capilar",  "description": "Hidratación y cuidado profundo del cabello", "price": 250, "note": "", "order": 7, "active": true }
   ],
-  "gallery": []
+  "gallery": [
+    { "id": "g1", "url": "/Images/PHOTO-2026-03-08-14-03-09 1.jpg", "alt": "Estilo 1", "order": 0 },
+    { "id": "g2", "url": "/Images/PHOTO-2026-03-08-14-03-09 2.jpg", "alt": "Estilo 2", "order": 1 },
+    { "id": "g3", "url": "/Images/PHOTO-2026-03-08-14-03-09 3.jpg", "alt": "Estilo 3", "order": 2 },
+    { "id": "g4", "url": "/Images/PHOTO-2026-03-08-14-03-09 4.jpg", "alt": "Estilo 4", "order": 3 },
+    { "id": "g5", "url": "/Images/PHOTO-2026-03-08-14-03-09.jpg",   "alt": "Estilo 5", "order": 4 },
+    { "id": "g6", "url": "/Images/PHOTO-2026-03-08-14-03-10.jpg",   "alt": "Estilo 6", "order": 5 },
+    { "id": "g7", "url": "/Images/Corte.png",                        "alt": "Corte",    "order": 6 },
+    { "id": "g8", "url": "/Borradores/Balayage.JPG",                 "alt": "Balayage", "order": 7 },
+    { "id": "g9", "url": "/Borradores/Nanoplastia.JPG",              "alt": "Nanoplastia", "order": 8 }
+  ]
 }

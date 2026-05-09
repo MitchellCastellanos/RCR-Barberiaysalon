@@ -65,6 +65,7 @@
         href="https://wa.me/524423536769?text=Hola%20RCR%2C%20quiero%20agendar%20una%20cita"
         target="_blank"
         rel="noopener"
+        data-link="bookingCta"
         class="btn btn-warning fw-semibold d-none d-lg-inline-flex">
         <i class="bi bi-whatsapp me-2"></i>Haz tu cita
       </a>
@@ -78,7 +79,7 @@
     <div class="card-body">
       <h2 class="text-center mb-3" style="font-family:'Cinzel'; color:#D4BA67;">Horario de atención</h2>
 
-      <div class="list-group">
+      <div class="list-group" data-section="hours">
         <div class="list-group-item bg-dark text-white d-flex justify-content-between border-warning">
           <span><b>Lunes, Martes, Miércoles y Viernes</b></span>
           <span>11:00am - 8:00pm</span>
@@ -145,10 +146,10 @@
 </main>
 
 <section class="footer text-center" style="font-family:'Cinzel'; color:white">
-  <a href="https://www.instagram.com/rcr_barbershop/" target="_blank">
+  <a href="https://www.instagram.com/rcr_barbershop/" target="_blank" rel="noopener" data-link="instagram">
     <img src="./Images/Logo instagram.png" width="50" height="50" alt="Instagram">
   </a>
-  <a href="https://www.facebook.com/rcr.carlos.2025/" target="_blank">
+  <a href="https://www.facebook.com/rcr.carlos.2025/" target="_blank" rel="noopener" data-link="facebook">
     <img src="./Images/Logo Facebook.png" width="50" height="50" alt="Facebook">
   </a>
 
@@ -163,11 +164,13 @@
     href="https://wa.me/524423536769?text=Hola%20RCR%2C%20quiero%20agendar%20una%20cita"
     target="_blank"
     rel="noopener"
+    data-link="bookingCta"
     class="btn btn-warning mobile-book-btn fw-semibold">
     <i class="bi bi-whatsapp me-2"></i>Agendar cita
   </a>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script type="module" src="./site-bind.js"></script>
 </body>
 </html>
