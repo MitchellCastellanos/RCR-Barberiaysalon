@@ -8,6 +8,14 @@ service firebase.storage {
         && request.resource.size < 10 * 1024 * 1024 // 10 MB
         && request.resource.contentType.matches('image/.*');
     }
+    // Product photos: public read (storefront + QR landing page),
+    // authenticated upload (size + type limited).
+    match /products/{productId}/{file} {
+      allow read: if true;
+      allow write: if request.auth != null
+        && request.resource.size < 10 * 1024 * 1024 // 10 MB
+        && request.resource.contentType.matches('image/.*');
+    }
     // Lock everything else.
     match /{path=**} {
       allow read, write: if false;

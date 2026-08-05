@@ -585,6 +585,149 @@ body {
 .toast-error   { border-color: rgba(224, 72, 72, 0.5); color: #F5C5C5; }
 
 /* ============================================================
+   PRODUCTS
+   ============================================================ */
+.products-grid {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+.product-card {
+  display: flex;
+  flex-direction: column;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: border-color 0.18s var(--easing);
+}
+.product-card:hover { border-color: var(--border-strong); }
+.product-card.is-inactive { opacity: 0.55; }
+.product-thumb {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: #000;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.product-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.product-thumb i { font-size: 1.8rem; color: var(--text-faint); }
+.product-body { padding: 12px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+.product-name {
+  font-family: 'Cinzel', serif;
+  font-size: 0.94rem;
+  color: var(--text);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.product-category { font-size: 0.72rem; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.06em; }
+.product-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 2px; }
+.product-price {
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 0.92rem;
+  background: linear-gradient(180deg, var(--gold-bright), var(--gold-deep));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.stock-chip {
+  font-size: 0.66rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(43,214,106,0.12);
+  color: #C8F4D6;
+  border: 1px solid rgba(43,214,106,0.35);
+  white-space: nowrap;
+}
+.stock-chip.is-low { background: rgba(224,72,72,0.15); color: #F5C5C5; border-color: rgba(224,72,72,0.4); }
+.product-actions { display: flex; gap: 6px; margin-top: auto; padding-top: 6px; }
+.product-actions .icon-btn { flex: 1; width: auto; }
+
+.modal-card-wide { max-width: 620px; }
+
+.product-photos {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.product-photo-thumb {
+  position: relative;
+  width: 72px; height: 72px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: #000;
+}
+.product-photo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.product-photo-thumb.is-pending { opacity: 0.7; }
+.product-photo-thumb .icon-btn {
+  position: absolute;
+  top: 2px; right: 2px;
+  width: 22px; height: 22px;
+  background: rgba(0,0,0,0.6);
+  border-color: rgba(255,255,255,0.2);
+}
+.prod-photo-btn { width: fit-content; }
+
+/* Inventory history */
+.stock-history {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  max-height: 180px;
+  overflow-y: auto;
+}
+.stock-history-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  border-bottom: 1px dashed var(--border);
+}
+.stock-history-row:last-child { border-bottom: none; }
+.stock-history-type { font-weight: 600; }
+.stock-history-type.is-entrada { color: #C8F4D6; }
+.stock-history-type.is-salida { color: #F5C5C5; }
+
+/* QR label */
+.qr-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 0;
+  text-align: center;
+}
+.qr-preview canvas { border-radius: 8px; background: #fff; padding: 8px; }
+.qr-label-name { font-weight: 600; color: var(--text); }
+.qr-label-price { color: var(--gold-light); font-size: 0.9rem; }
+
+/* Print-only label */
+#printLabel { display: none; }
+@media print {
+  body.is-printing-label * { visibility: hidden; }
+  body.is-printing-label #printLabel,
+  body.is-printing-label #printLabel * { visibility: visible; }
+  body.is-printing-label #printLabel {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* ============================================================
    RESPONSIVE
    ============================================================ */
 @media (max-width: 720px) {

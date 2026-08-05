@@ -26,7 +26,7 @@ async function getFirebase() {
   return _firebaseAppPromise;
 }
 
-async function getFirestore() {
+export async function getFirestore() {
   if (!_firestorePromise) {
     _firestorePromise = (async () => {
       const app = await getFirebase();

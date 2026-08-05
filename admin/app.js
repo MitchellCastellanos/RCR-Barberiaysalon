@@ -7,6 +7,11 @@
 
 import { FIREBASE_ENABLED } from "../enlaces/firebase-config.js";
 import { fetchData, saveData, getAuth, getStorage } from "../enlaces/data-store.js";
+import {
+  subscribeProducts, createProduct, updateProduct, deleteProduct,
+  adjustStock, subscribeMovements, uploadProductPhoto, deleteProductPhoto,
+} from "../enlaces/products-store.js";
+import { buildProductUrl, renderQrToCanvas } from "../enlaces/qr.js";
 
 const $  = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
@@ -16,6 +21,14 @@ let currentData = null;        // last persisted data (server snapshot)
 let workingData = null;        // local edits (pre-save)
 let dirty = false;
 let authUser = null;
+
+// Products/inventory save immediately to their own Firestore collection —
+// unlike services/gallery they don't go through the workingData/save-bar flow.
+let products = [];
+let unsubProducts = null;
+let pendingPhotoFiles = [];    // File objects queued before a new product's first save
+let stockMovementsUnsub = null;
+let qrCurrentProduct = null;
 
 // ============================================================
 // Boot
@@ -114,6 +127,36 @@ async function startApp() {
   });
 
   $("#uploadInput").addEventListener("change", onUploadFiles);
+
+  $("#addProductBtn").onclick = () => openProductModal(null);
+  $("#productModalClose").onclick = closeProductModal;
+  $("#prodCancelBtn").onclick = closeProductModal;
+  $("#productForm").addEventListener("submit", onProductFormSubmit);
+  $("#prodDeleteBtn").onclick = onProductDelete;
+  $("#productModal").addEventListener("click", (e) => {
+    if (e.target.id === "productModal") closeProductModal();
+  });
+  $("#prodPhotoInput").addEventListener("change", onProductPhotoFiles);
+
+  $("#stockModalClose").onclick = closeStockModal;
+  $("#stockCancelBtn").onclick = closeStockModal;
+  $("#stockForm").addEventListener("submit", onStockFormSubmit);
+  $("#stockModal").addEventListener("click", (e) => {
+    if (e.target.id === "stockModal") closeStockModal();
+  });
+
+  $("#qrModalClose").onclick = closeQrModal;
+  $("#qrModalCancelBtn").onclick = closeQrModal;
+  $("#qrModal").addEventListener("click", (e) => {
+    if (e.target.id === "qrModal") closeQrModal();
+  });
+  $("#qrPrintBtn").onclick = onPrintLabel;
+  window.addEventListener("afterprint", () => {
+    document.body.classList.remove("is-printing-label");
+    $("#printLabel").innerHTML = "";
+  });
+
+  initProducts();
 
   $("#saveBtn").onclick = onSaveAll;
   $("#discardBtn").onclick = onDiscardAll;
@@ -356,6 +399,329 @@ function onServiceDelete() {
   markDirty();
   closeServiceModal();
   renderServices();
+}
+
+// ============================================================
+// Products + inventory
+// ============================================================
+async function initProducts() {
+  unsubProducts = await subscribeProducts((list) => {
+    products = list.slice().sort((a, b) =>
+      (a.order ?? 0) - (b.order ?? 0) || String(a.name).localeCompare(String(b.name))
+    );
+    renderProducts();
+  });
+}
+
+function renderProducts() {
+  const list = $("#productsList");
+  list.innerHTML = "";
+  if (products.length === 0) {
+    list.innerHTML = `<li class="empty" style="grid-column:1/-1;"><i class="fas fa-box-open"></i> Aún no hay productos. Agrega el primero con el botón de arriba.</li>`;
+    return;
+  }
+  products.forEach((p) => {
+    const li = document.createElement("li");
+    li.className = "product-card" + (p.active === false ? " is-inactive" : "");
+    const photo = p.photos && p.photos[0] ? p.photos[0].url : null;
+    const stock = Number(p.stock) || 0;
+    const low = stock <= (Number(p.lowStockThreshold) || 0);
+    li.innerHTML = `
+      <div class="product-thumb">
+        ${photo ? `<img src="${escapeAttr(photo)}" alt="" loading="lazy" />` : `<i class="fas fa-box"></i>`}
+      </div>
+      <div class="product-body">
+        <div class="product-name">${escape(p.name || "(sin nombre)")}</div>
+        ${p.category ? `<div class="product-category">${escape(p.category)}</div>` : ""}
+        <div class="product-meta">
+          <span class="product-price">${formatPrice(p.price)}</span>
+          <span class="stock-chip ${low ? "is-low" : ""}">${stock <= 0 ? "Agotado" : `${stock} ${escape(p.unit || "pza")}`}</span>
+        </div>
+        <div class="product-actions">
+          <button class="icon-btn" data-action="edit" title="Editar"><i class="fas fa-pen"></i></button>
+          <button class="icon-btn" data-action="stock" title="Inventario"><i class="fas fa-boxes-stacked"></i></button>
+          <button class="icon-btn" data-action="qr" title="Etiqueta QR"><i class="fas fa-qrcode"></i></button>
+        </div>
+      </div>
+    `;
+    li.querySelector('[data-action="edit"]').onclick = () => openProductModal(p.id);
+    li.querySelector('[data-action="stock"]').onclick = () => openStockModal(p.id);
+    li.querySelector('[data-action="qr"]').onclick = () => openQrModal(p.id);
+    list.appendChild(li);
+  });
+}
+
+// ---------- Product editor ----------
+function openProductModal(id) {
+  const isNew = !id;
+  const p = isNew ? null : products.find((x) => x.id === id);
+  if (!isNew && !p) return;
+
+  pendingPhotoFiles = [];
+  $("#productModalTitle").textContent = isNew ? "Nuevo producto" : "Editar producto";
+  $("#prodId").value = isNew ? "" : p.id;
+  $("#prodName").value = p?.name || "";
+  $("#prodCategory").value = p?.category || "";
+  $("#prodUnit").value = p?.unit || "pieza";
+  $("#prodPrice").value = p?.price ?? "";
+  $("#prodCost").value = p?.cost ?? "";
+  $("#prodLowStock").value = p?.lowStockThreshold ?? 3;
+  $("#prodActive").value = p?.active === false ? "false" : "true";
+  $("#prodDesc").value = p?.description || "";
+  $("#prodDeleteBtn").hidden = isNew;
+
+  $("#prodInitialStockField").hidden = !isNew;
+  $("#prodInitialStock").value = 0;
+
+  const stockInfo = $("#prodStockInfo");
+  stockInfo.hidden = isNew;
+  if (!isNew) {
+    stockInfo.innerHTML = `<p class="field-hint"><i class="fas fa-circle-info"></i> Inventario actual: <b>${Number(p.stock) || 0} ${escape(p.unit || "pza")}</b>. Para agregar o retirar existencias usa el botón <i class="fas fa-boxes-stacked"></i> "Inventario" desde la lista de productos.</p>`;
+  }
+
+  renderProductPhotos(p);
+
+  $("#productModal").hidden = false;
+  setTimeout(() => $("#prodName").focus(), 50);
+}
+
+function closeProductModal() {
+  $("#productModal").hidden = true;
+  $("#productForm").reset();
+  pendingPhotoFiles = [];
+}
+
+function renderProductPhotos(p) {
+  const list = $("#prodPhotosList");
+  list.innerHTML = "";
+  (p?.photos || []).forEach((photo) => {
+    const li = document.createElement("li");
+    li.className = "product-photo-thumb";
+    li.innerHTML = `<img src="${escapeAttr(photo.url)}" alt="" /><button type="button" class="icon-btn icon-btn-danger" title="Eliminar"><i class="fas fa-times"></i></button>`;
+    li.querySelector("button").onclick = () => onDeleteExistingPhoto(p.id, photo);
+    list.appendChild(li);
+  });
+  pendingPhotoFiles.forEach((file, idx) => {
+    const li = document.createElement("li");
+    li.className = "product-photo-thumb is-pending";
+    const url = URL.createObjectURL(file);
+    li.innerHTML = `<img src="${url}" alt="" /><button type="button" class="icon-btn icon-btn-danger" title="Quitar"><i class="fas fa-times"></i></button>`;
+    li.querySelector("button").onclick = () => {
+      pendingPhotoFiles.splice(idx, 1);
+      renderProductPhotos(p);
+    };
+    list.appendChild(li);
+  });
+}
+
+async function onProductPhotoFiles(ev) {
+  const files = Array.from(ev.target.files || []).filter((f) => f.type.startsWith("image/"));
+  ev.target.value = "";
+  if (files.length === 0) return;
+
+  const id = $("#prodId").value;
+  if (!id) {
+    pendingPhotoFiles.push(...files);
+    renderProductPhotos(null);
+    return;
+  }
+
+  const p = products.find((x) => x.id === id);
+  toast(`Subiendo ${files.length} foto${files.length === 1 ? "" : "s"}…`);
+  try {
+    const uploaded = [];
+    for (const file of files) uploaded.push(await uploadProductPhoto(id, file));
+    const photos = [...(p.photos || []), ...uploaded];
+    await updateProduct(id, { photos });
+    toast("Foto(s) agregada(s).", "success");
+    renderProductPhotos({ ...p, photos });
+  } catch (err) {
+    toast("Error subiendo foto: " + err.message, "error");
+  }
+}
+
+async function onDeleteExistingPhoto(productId, photo) {
+  if (!confirm("¿Eliminar esta foto?")) return;
+  try {
+    if (photo.path) await deleteProductPhoto(photo.path);
+    const p = products.find((x) => x.id === productId);
+    const photos = (p.photos || []).filter((ph) => ph.id !== photo.id);
+    await updateProduct(productId, { photos });
+    toast("Foto eliminada.", "success");
+    renderProductPhotos({ ...p, photos });
+  } catch (err) {
+    toast("Error eliminando foto: " + err.message, "error");
+  }
+}
+
+async function onProductFormSubmit(ev) {
+  ev.preventDefault();
+  const id = $("#prodId").value;
+  const name = $("#prodName").value.trim();
+  if (!name) { toast("El nombre es obligatorio.", "error"); return; }
+  const priceVal = $("#prodPrice").value;
+  if (priceVal === "") { toast("El precio es obligatorio.", "error"); return; }
+
+  const payload = {
+    name,
+    category: $("#prodCategory").value.trim(),
+    unit: $("#prodUnit").value.trim() || "pieza",
+    price: Number(priceVal),
+    cost: $("#prodCost").value === "" ? "" : Number($("#prodCost").value),
+    lowStockThreshold: Number($("#prodLowStock").value) || 0,
+    active: $("#prodActive").value === "true",
+    description: $("#prodDesc").value.trim(),
+  };
+
+  const btn = $("#prodSaveBtn");
+  btn.disabled = true;
+  btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Guardando…`;
+  try {
+    if (id) {
+      await updateProduct(id, payload);
+      toast("Producto actualizado.", "success");
+    } else {
+      payload.initialStock = Number($("#prodInitialStock").value) || 0;
+      payload.order = products.length;
+      const created = await createProduct(payload);
+      if (pendingPhotoFiles.length > 0) {
+        const uploaded = [];
+        for (const file of pendingPhotoFiles) uploaded.push(await uploadProductPhoto(created.id, file));
+        await updateProduct(created.id, { photos: uploaded });
+      }
+      toast("Producto creado.", "success");
+    }
+    closeProductModal();
+  } catch (err) {
+    toast("Error guardando producto: " + err.message, "error");
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<i class="fas fa-check"></i> Guardar producto`;
+  }
+}
+
+async function onProductDelete() {
+  const id = $("#prodId").value;
+  const p = products.find((x) => x.id === id);
+  if (!p) return;
+  if (!confirm(`¿Eliminar "${p.name}"? Esta acción no se puede deshacer.`)) return;
+  try {
+    for (const photo of p.photos || []) {
+      if (photo.path) { try { await deleteProductPhoto(photo.path); } catch (_) { /* best effort */ } }
+    }
+    await deleteProduct(id);
+    toast("Producto eliminado.", "success");
+    closeProductModal();
+  } catch (err) {
+    toast("Error eliminando producto: " + err.message, "error");
+  }
+}
+
+// ---------- Inventory ----------
+function openStockModal(productId) {
+  const p = products.find((x) => x.id === productId);
+  if (!p) return;
+
+  $("#stockProductId").value = productId;
+  $("#stockModalTitle").textContent = `Inventario · ${p.name}`;
+  $("#stockCurrentInfo").innerHTML = `<p class="field-hint">Existencia actual: <b>${Number(p.stock) || 0} ${escape(p.unit || "pza")}</b></p>`;
+  $("#stockType").value = "entrada";
+  $("#stockQty").value = "";
+  $("#stockReason").value = "";
+  $("#stockModal").hidden = false;
+
+  renderStockHistory([]);
+  subscribeMovements(productId, renderStockHistory).then((unsub) => {
+    if (stockMovementsUnsub) stockMovementsUnsub();
+    stockMovementsUnsub = unsub;
+  });
+
+  setTimeout(() => $("#stockQty").focus(), 50);
+}
+
+function closeStockModal() {
+  $("#stockModal").hidden = true;
+  $("#stockForm").reset();
+  if (stockMovementsUnsub) { stockMovementsUnsub(); stockMovementsUnsub = null; }
+}
+
+function renderStockHistory(rows) {
+  const el = $("#stockHistory");
+  if (!rows.length) {
+    el.innerHTML = `<p class="field-hint">Sin movimientos registrados aún.</p>`;
+    return;
+  }
+  el.innerHTML = rows.map((r) => `
+    <div class="stock-history-row">
+      <span class="stock-history-type is-${r.type === "salida" ? "salida" : "entrada"}">
+        ${r.type === "salida" ? "−" : "+"}${r.quantity}
+      </span>
+      <span>${escape(r.reason || "—")}</span>
+      <span>${new Date(r.createdAt).toLocaleDateString("es-MX", { day: "2-digit", month: "short" })}</span>
+    </div>
+  `).join("");
+}
+
+async function onStockFormSubmit(ev) {
+  ev.preventDefault();
+  const productId = $("#stockProductId").value;
+  const type = $("#stockType").value;
+  const qty = Number($("#stockQty").value);
+  const reason = $("#stockReason").value.trim();
+  if (!qty || qty <= 0) { toast("Ingresa una cantidad válida.", "error"); return; }
+
+  const btn = $("#stockSubmitBtn");
+  btn.disabled = true;
+  btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Guardando…`;
+  try {
+    const p = products.find((x) => x.id === productId);
+    const stockAfter = await adjustStock(productId, { type, quantity: qty, reason });
+    toast(type === "salida" ? "Salida registrada." : "Entrada registrada.", "success");
+    $("#stockQty").value = "";
+    $("#stockReason").value = "";
+    $("#stockCurrentInfo").innerHTML = `<p class="field-hint">Existencia actual: <b>${stockAfter} ${escape(p?.unit || "pza")}</b></p>`;
+  } catch (err) {
+    toast(err.message || "Error registrando el movimiento.", "error");
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<i class="fas fa-check"></i> Registrar`;
+  }
+}
+
+// ---------- QR labels ----------
+async function openQrModal(productId) {
+  const p = products.find((x) => x.id === productId);
+  if (!p) return;
+  qrCurrentProduct = p;
+  $("#qrLabelName").textContent = p.name;
+  $("#qrLabelPrice").textContent = formatPrice(p.price);
+  $("#qrModal").hidden = false;
+  try {
+    await renderQrToCanvas($("#qrCanvas"), buildProductUrl(p.id), { size: 256 });
+  } catch (err) {
+    toast("No se pudo generar el código QR: " + err.message, "error");
+  }
+}
+
+function closeQrModal() {
+  $("#qrModal").hidden = true;
+  qrCurrentProduct = null;
+}
+
+function onPrintLabel() {
+  if (!qrCurrentProduct) return;
+  const sizeCm = $("#qrSize").value;
+  const showPrice = $("#qrShowPrice").checked;
+  const dataUrl = $("#qrCanvas").toDataURL("image/png");
+  $("#printLabel").innerHTML = `
+    <div style="width:${sizeCm}cm;height:${sizeCm}cm;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2mm;padding:1mm;box-sizing:border-box;font-family:sans-serif;">
+      <img src="${dataUrl}" style="width:80%;height:auto;" />
+      <div style="font-size:2.2mm;font-weight:700;text-align:center;line-height:1.1;">${escape(qrCurrentProduct.name)}</div>
+      ${showPrice ? `<div style="font-size:2mm;">${escape(formatPrice(qrCurrentProduct.price))}</div>` : ""}
+    </div>
+  `;
+  document.body.classList.add("is-printing-label");
+  window.print();
 }
 
 // ============================================================

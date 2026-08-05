@@ -61,6 +61,7 @@
 
     <nav class="tabs" role="tablist">
       <button class="tab is-active" data-tab="servicios" role="tab"><i class="fas fa-tag"></i> Servicios y Precios</button>
+      <button class="tab"           data-tab="productos" role="tab"><i class="fas fa-box"></i> Productos</button>
       <button class="tab"           data-tab="galeria"   role="tab"><i class="fas fa-images"></i> Galería</button>
       <button class="tab"           data-tab="horarios"  role="tab"><i class="far fa-clock"></i> Horarios</button>
       <button class="tab"           data-tab="enlaces"   role="tab"><i class="fas fa-link"></i> Enlaces</button>
@@ -84,6 +85,21 @@
       </div>
       <p class="panel-help">Los servicios aparecen en la página pública en este mismo orden. Arrastra el ícono <i class="fas fa-grip-vertical"></i> para reordenar.</p>
       <ul class="services-list" id="servicesList"></ul>
+    </section>
+
+    <!-- ─── Productos ─── -->
+    <section class="panel" id="panel-productos" hidden>
+      <div class="panel-head">
+        <h2 class="panel-title">Productos e inventario</h2>
+        <button class="btn btn-primary" id="addProductBtn"><i class="fas fa-plus"></i> Agregar producto</button>
+      </div>
+      <p class="panel-help">
+        Cada producto guarda su propio inventario y genera su código QR automáticamente.
+        Usa <i class="fas fa-boxes-stacked"></i> para registrar entradas/salidas y
+        <i class="fas fa-qrcode"></i> para ver e imprimir su etiqueta. Los cambios aquí se
+        guardan al instante, no requieren el botón "Guardar cambios".
+      </p>
+      <ul class="products-grid" id="productsList"></ul>
     </section>
 
     <!-- ─── Galería ─── -->
@@ -237,6 +253,146 @@
       </form>
     </div>
   </div>
+
+  <!-- Product editor modal -->
+  <div class="modal" id="productModal" hidden>
+    <div class="modal-card modal-card-wide">
+      <div class="modal-head">
+        <h3 id="productModalTitle">Nuevo producto</h3>
+        <button class="icon-btn" id="productModalClose" aria-label="Cerrar"><i class="fas fa-times"></i></button>
+      </div>
+      <form id="productForm" class="form-grid">
+        <input type="hidden" id="prodId" />
+        <label class="field full">
+          <span class="field-label">Nombre <span class="req">*</span></span>
+          <input type="text" id="prodName" required maxlength="60" />
+        </label>
+        <label class="field">
+          <span class="field-label">Categoría</span>
+          <input type="text" id="prodCategory" maxlength="40" placeholder="Ej. Cuidado de barba" />
+        </label>
+        <label class="field">
+          <span class="field-label">Unidad</span>
+          <input type="text" id="prodUnit" maxlength="20" placeholder="pieza" />
+        </label>
+        <label class="field">
+          <span class="field-label">Precio de venta (MXN) <span class="req">*</span></span>
+          <input type="number" id="prodPrice" min="0" step="1" required />
+        </label>
+        <label class="field">
+          <span class="field-label">Costo (opcional)</span>
+          <input type="number" id="prodCost" min="0" step="1" />
+        </label>
+        <label class="field" id="prodInitialStockField">
+          <span class="field-label">Stock inicial</span>
+          <input type="number" id="prodInitialStock" min="0" step="1" value="0" />
+        </label>
+        <label class="field">
+          <span class="field-label">Avisar cuando queden</span>
+          <input type="number" id="prodLowStock" min="0" step="1" value="3" />
+          <span class="field-hint">Alerta visual cuando el inventario llegue a esta cantidad o menos.</span>
+        </label>
+        <label class="field">
+          <span class="field-label">¿Activo?</span>
+          <select id="prodActive">
+            <option value="true">Sí, mostrar</option>
+            <option value="false">No, ocultar</option>
+          </select>
+        </label>
+        <label class="field full">
+          <span class="field-label">Descripción</span>
+          <textarea id="prodDesc" rows="2" maxlength="300"></textarea>
+        </label>
+
+        <div class="field full" id="prodStockInfo" hidden></div>
+
+        <div class="field full">
+          <span class="field-label">Fotos</span>
+          <label class="btn btn-ghost prod-photo-btn" for="prodPhotoInput">
+            <i class="fas fa-camera"></i> Agregar fotos
+          </label>
+          <input type="file" id="prodPhotoInput" accept="image/*" multiple hidden />
+          <ul class="product-photos" id="prodPhotosList"></ul>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" id="prodDeleteBtn" hidden><i class="fas fa-trash"></i> Eliminar</button>
+          <button type="button" class="btn btn-ghost" id="prodCancelBtn">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="prodSaveBtn"><i class="fas fa-check"></i> Guardar producto</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Inventory modal -->
+  <div class="modal" id="stockModal" hidden>
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3 id="stockModalTitle">Inventario</h3>
+        <button class="icon-btn" id="stockModalClose" aria-label="Cerrar"><i class="fas fa-times"></i></button>
+      </div>
+      <form id="stockForm" class="form-grid">
+        <input type="hidden" id="stockProductId" />
+        <div class="field full" id="stockCurrentInfo"></div>
+        <label class="field">
+          <span class="field-label">Movimiento</span>
+          <select id="stockType">
+            <option value="entrada">Entrada (agregar)</option>
+            <option value="salida">Salida (retirar)</option>
+          </select>
+        </label>
+        <label class="field">
+          <span class="field-label">Cantidad <span class="req">*</span></span>
+          <input type="number" id="stockQty" min="1" step="1" required />
+        </label>
+        <label class="field full">
+          <span class="field-label">Motivo (opcional)</span>
+          <input type="text" id="stockReason" maxlength="120" placeholder="Ej. Compra a proveedor, merma, ajuste…" />
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" id="stockCancelBtn">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="stockSubmitBtn"><i class="fas fa-check"></i> Registrar</button>
+        </div>
+      </form>
+      <div class="stock-history" id="stockHistory"></div>
+    </div>
+  </div>
+
+  <!-- QR label modal -->
+  <div class="modal" id="qrModal" hidden>
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3>Etiqueta QR</h3>
+        <button class="icon-btn" id="qrModalClose" aria-label="Cerrar"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="qr-preview">
+        <canvas id="qrCanvas" width="256" height="256"></canvas>
+        <div class="qr-label-name" id="qrLabelName"></div>
+        <div class="qr-label-price" id="qrLabelPrice"></div>
+      </div>
+      <div class="form-grid">
+        <label class="field">
+          <span class="field-label">Tamaño de etiqueta</span>
+          <select id="qrSize">
+            <option value="3">3 × 3 cm</option>
+            <option value="4" selected>4 × 4 cm</option>
+            <option value="5">5 × 5 cm</option>
+          </select>
+        </label>
+        <label class="check" style="align-self:center;">
+          <input type="checkbox" id="qrShowPrice" checked />
+          <span>Incluir precio</span>
+        </label>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="qrModalCancelBtn">Cerrar</button>
+        <button type="button" class="btn btn-primary" id="qrPrintBtn"><i class="fas fa-print"></i> Imprimir etiqueta</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Print-only single label (populated right before window.print()) -->
+  <div id="printLabel"></div>
 
   <script type="module" src="./app.js"></script>
 </body>
