@@ -712,7 +712,7 @@ body {
 .qr-label-name { font-weight: 600; color: var(--text); }
 .qr-label-price { color: var(--gold-light); font-size: 0.9rem; }
 
-/* Print-only label */
+/* Print-only label(s) — one or many, wraps and paginates */
 #printLabel { display: none; }
 @media print {
   body.is-printing-label * { visibility: hidden; }
@@ -720,12 +720,202 @@ body {
   body.is-printing-label #printLabel * { visibility: visible; }
   body.is-printing-label #printLabel {
     display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 3mm;
     position: fixed;
     inset: 0;
-    align-items: center;
-    justify-content: center;
+    padding: 4mm;
+  }
+  body.is-printing-label #printLabel .print-label-item {
+    break-inside: avoid;
   }
 }
+
+/* Print-only receipt (Caja) */
+#printReceipt { display: none; }
+@media print {
+  body.is-printing-receipt * { visibility: hidden; }
+  body.is-printing-receipt #printReceipt,
+  body.is-printing-receipt #printReceipt * { visibility: visible; }
+  body.is-printing-receipt #printReceipt {
+    display: block;
+    position: fixed;
+    inset: 0;
+    padding: 4mm;
+  }
+}
+
+/* ============================================================
+   CAJA
+   ============================================================ */
+.pos-layout {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+.pos-picker-tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+.pos-picker-tabs button {
+  flex: 1;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 8px 10px;
+  border-radius: 9px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+.pos-picker-tabs button.is-active {
+  color: #1A1407;
+  background: linear-gradient(135deg, var(--gold-bright), var(--gold));
+  border-color: var(--gold);
+}
+.pos-item-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 420px;
+  overflow-y: auto;
+}
+.pos-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.18s var(--easing), background 0.18s var(--easing);
+}
+.pos-item-row:hover { border-color: var(--gold); background: rgba(212,186,103,0.06); }
+.pos-item-row.is-disabled { opacity: 0.4; cursor: not-allowed; }
+.pos-item-name { font-weight: 600; color: var(--text); font-size: 0.88rem; }
+.pos-item-sub { font-size: 0.72rem; color: var(--text-faint); }
+.pos-item-price { color: var(--gold-light); font-weight: 700; font-size: 0.86rem; white-space: nowrap; }
+
+.pos-cart {
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  position: sticky;
+  top: 12px;
+}
+.pos-cart-title {
+  font-family: 'Cinzel', serif;
+  color: var(--gold-light);
+  font-size: 0.92rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.pos-cart-list { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; max-height: 260px; overflow-y: auto; }
+.pos-cart-row { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center; font-size: 0.84rem; }
+.pos-cart-row-name { color: var(--text); }
+.pos-cart-row-sub { color: var(--text-faint); font-size: 0.72rem; }
+.pos-qty { display: flex; align-items: center; gap: 4px; }
+.pos-qty button {
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.8rem;
+  line-height: 1;
+}
+.pos-qty button:hover { border-color: var(--gold); color: var(--gold); }
+.pos-cart-empty { text-align: center; color: var(--text-faint); font-size: 0.85rem; padding: 20px 0; }
+.pos-payment { display: flex; gap: 8px; margin-bottom: 12px; }
+.pos-payment button {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.03);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.86rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.pos-payment button.is-active {
+  color: #1A1407;
+  background: linear-gradient(135deg, var(--gold-bright), var(--gold));
+  border-color: var(--gold);
+}
+.pos-total-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-top: 1px dashed var(--border); margin-bottom: 10px; }
+.pos-total-label { color: var(--text-muted); font-size: 0.88rem; }
+.pos-total-amount {
+  font-family: 'Cinzel', serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  background: linear-gradient(180deg, var(--gold-bright), var(--gold-deep));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Corte de caja */
+.pos-report-totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 14px; }
+.pos-report-tile {
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+}
+.pos-report-tile-label { font-size: 0.7rem; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.06em; }
+.pos-report-tile-value { font-family: 'Cinzel', serif; font-size: 1.1rem; color: var(--gold-light); margin-top: 4px; }
+.tx-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 6px;
+  font-size: 0.82rem;
+}
+.tx-row.is-voided { opacity: 0.5; text-decoration: line-through; }
+.tx-row-time { color: var(--text-faint); font-size: 0.74rem; }
+.tx-row-items { color: var(--text-muted); }
+.tx-row-method {
+  font-size: 0.66rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(212,186,103,0.12);
+  color: var(--gold-light);
+  border: 1px solid var(--border);
+  white-space: nowrap;
+}
+.tx-row-total { font-weight: 700; color: var(--text); white-space: nowrap; }
+
+/* Product picker for label batches */
+.label-pick-list { list-style: none; display: flex; flex-direction: column; gap: 6px; max-height: 360px; overflow-y: auto; margin-bottom: 14px; }
+.label-pick-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.label-pick-row input[type="checkbox"] { accent-color: var(--gold); width: 18px; height: 18px; }
+.label-pick-row input[type="number"] { width: 60px; }
 
 /* ============================================================
    RESPONSIVE
@@ -750,4 +940,11 @@ body {
   .hours-list input[type="time"]:nth-of-type(2) { grid-area: close; }
   .topbar-title { font-size: 1rem; }
   .tab { font-size: 0.78rem; padding: 8px 10px; }
+  .pos-layout { grid-template-columns: 1fr; }
+  .pos-cart { position: static; }
+  .tx-row { grid-template-columns: 1fr auto; grid-template-areas: "time method" "items items" "total total"; }
+  .tx-row-time { grid-area: time; }
+  .tx-row-method { grid-area: method; justify-self: end; }
+  .tx-row-items { grid-area: items; }
+  .tx-row-total { grid-area: total; }
 }

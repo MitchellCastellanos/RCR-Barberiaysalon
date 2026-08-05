@@ -20,8 +20,9 @@ export function buildProductUrl(productId) {
 
 /** Renders a QR code for `text` onto an existing <canvas> element. */
 export async function renderQrToCanvas(canvas, text, { size = 256 } = {}) {
-  const QRCode = await getQrLib();
-  await QRCode.default.toCanvas(canvas, text, {
+  const mod = await getQrLib();
+  const QRCode = mod.default || mod;
+  await QRCode.toCanvas(canvas, text, {
     width: size,
     margin: 1,
     color: { dark: "#0A0A0A", light: "#FFFFFF" },

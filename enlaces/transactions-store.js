@@ -1,0 +1,146 @@
+// ============================================================
+// Cash register (Caja) data layer.
+// Collection: `transactions`, admin-only (never exposed publicly).
+// A sale is one Firestore transaction that both deducts product
+// stock and appends inventory movements + the sale record, so it
+// either fully commits or fully fails — never a partial sale with
+// stock silently out of sync.
+// ============================================================
+
+import { FIREBASE_ENABLED } from "./firebase-config.js";
+import { getFirestore } from "./data-store.js";
+
+function makeId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+}
+
+function nowIso() {
+  return new Date().toISOString();
+}
+
+/**
+ * cartItems: [{ kind: "service"|"product", refId, name, unitPrice, qty }]
+ * paymentMethod: "efectivo" | "tarjeta"
+ */
+export async function sellCart(cartItems, paymentMethod, notes = "") {
+  if (!FIREBASE_ENABLED) throw new Error("Firebase no está habilitado.");
+  if (!cartItems || cartItems.length === 0) throw new Error("El carrito está vacío.");
+
+  const { db, doc, collection, runTransaction } = await getFirestore();
+  const txId = makeId();
+  const txRef = doc(db, "transactions", txId);
+  const productItems = cartItems.filter((i) => i.kind === "product");
+
+  const total = cartItems.reduce((sum, i) => sum + Number(i.unitPrice) * Number(i.qty), 0);
+
+  await runTransaction(db, async (tx) => {
+    // 1. Read + validate stock for every product line first (Firestore
+    //    transactions require all reads before any writes).
+    const productRefs = productItems.map((i) => doc(db, "products", i.refId));
+    const snaps = await Promise.all(productRefs.map((ref) => tx.get(ref)));
+
+    snaps.forEach((snap, idx) => {
+      const item = productItems[idx];
+      if (!snap.exists()) throw new Error(`"${item.name}" ya no existe.`);
+      const current = Number(snap.data().stock) || 0;
+      if (current < item.qty) {
+        throw new Error(`No hay suficiente inventario de "${item.name}" (quedan ${current}).`);
+      }
+    });
+
+    // 2. Write stock deductions + movement log entries.
+    snaps.forEach((snap, idx) => {
+      const item = productItems[idx];
+      const current = Number(snap.data().stock) || 0;
+      const stockAfter = current - item.qty;
+      tx.update(productRefs[idx], { stock: stockAfter, updatedAt: nowIso() });
+      const movementRef = doc(collection(db, "inventoryMovements"));
+      tx.set(movementRef, {
+        id: movementRef.id,
+        productId: item.refId,
+        productName: item.name,
+        type: "salida",
+        quantity: item.qty,
+        stockAfter,
+        reason: "Venta",
+        relatedTransactionId: txId,
+        createdAt: nowIso(),
+      });
+    });
+
+    // 3. Write the sale itself.
+    tx.set(txRef, {
+      id: txId,
+      items: cartItems.map((i) => ({
+        kind: i.kind,
+        refId: i.refId,
+        name: i.name,
+        unitPrice: Number(i.unitPrice),
+        qty: Number(i.qty),
+        subtotal: Number(i.unitPrice) * Number(i.qty),
+      })),
+      paymentMethod,
+      total,
+      notes: notes || "",
+      voided: false,
+      voidedAt: null,
+      createdAt: nowIso(),
+    });
+  });
+
+  return { id: txId, total };
+}
+
+/** Reverses stock for a sale's product lines and marks it voided. */
+export async function voidTransaction(transactionId) {
+  if (!FIREBASE_ENABLED) throw new Error("Firebase no está habilitado.");
+  const { db, doc, collection, runTransaction } = await getFirestore();
+  const txRef = doc(db, "transactions", transactionId);
+
+  await runTransaction(db, async (tx) => {
+    const txSnap = await tx.get(txRef);
+    if (!txSnap.exists()) throw new Error("La venta ya no existe.");
+    const saleData = txSnap.data();
+    if (saleData.voided) throw new Error("Esta venta ya estaba cancelada.");
+
+    const productItems = (saleData.items || []).filter((i) => i.kind === "product");
+    const productRefs = productItems.map((i) => doc(db, "products", i.refId));
+    const snaps = await Promise.all(productRefs.map((ref) => tx.get(ref)));
+
+    snaps.forEach((snap, idx) => {
+      if (!snap.exists()) return; // product deleted since — nothing to restock
+      const item = productItems[idx];
+      const current = Number(snap.data().stock) || 0;
+      const stockAfter = current + item.qty;
+      tx.update(productRefs[idx], { stock: stockAfter, updatedAt: nowIso() });
+      const movementRef = doc(collection(db, "inventoryMovements"));
+      tx.set(movementRef, {
+        id: movementRef.id,
+        productId: item.refId,
+        productName: item.name,
+        type: "entrada",
+        quantity: item.qty,
+        stockAfter,
+        reason: "Cancelación de venta",
+        relatedTransactionId: transactionId,
+        createdAt: nowIso(),
+      });
+    });
+
+    tx.update(txRef, { voided: true, voidedAt: nowIso() });
+  });
+}
+
+/** One-shot fetch of transactions between two ISO timestamps (inclusive), most recent first. */
+export async function fetchTransactionsRange(startIso, endIso) {
+  if (!FIREBASE_ENABLED) return [];
+  const { db, collection, query, where, orderBy, getDocs } = await getFirestore();
+  const q = query(
+    collection(db, "transactions"),
+    where("createdAt", ">=", startIso),
+    where("createdAt", "<=", endIso),
+    orderBy("createdAt", "desc")
+  );
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => d.data());
+}

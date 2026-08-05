@@ -12,6 +12,8 @@ import {
   adjustStock, subscribeMovements, uploadProductPhoto, deleteProductPhoto,
 } from "../products-store.js";
 import { buildProductUrl, renderQrToCanvas } from "../qr.js";
+import { sellCart, voidTransaction, fetchTransactionsRange } from "../transactions-store.js";
+import { scanQrFromCamera, extractProductId } from "../qr-scan.js";
 
 const $  = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
@@ -29,6 +31,13 @@ let unsubProducts = null;
 let pendingPhotoFiles = [];    // File objects queued before a new product's first save
 let stockMovementsUnsub = null;
 let qrCurrentProduct = null;
+
+// Caja (POS)
+let posCart = [];
+let posKind = "service";       // which picker list is showing: "service" | "product"
+let posPaymentMethod = "efectivo";
+let posScanStop = null;        // stops the camera scan loop
+let lastSale = null;           // last completed sale, for the optional receipt
 
 // ============================================================
 // Boot
@@ -153,8 +162,33 @@ async function startApp() {
   $("#qrPrintBtn").onclick = onPrintLabel;
   window.addEventListener("afterprint", () => {
     document.body.classList.remove("is-printing-label");
+    document.body.classList.remove("is-printing-receipt");
     $("#printLabel").innerHTML = "";
+    $("#printReceipt").innerHTML = "";
   });
+
+  $$('[data-pos-view]').forEach((btn) => btn.addEventListener("click", () => switchPosView(btn.dataset.posView)));
+  $$('[data-pos-kind]').forEach((btn) => btn.addEventListener("click", () => {
+    posKind = btn.dataset.posKind;
+    $$('[data-pos-kind]').forEach((b) => b.classList.toggle("is-active", b === btn));
+    renderPosItemList();
+  }));
+  $$('[data-pos-payment]').forEach((btn) => btn.addEventListener("click", () => {
+    posPaymentMethod = btn.dataset.posPayment;
+    $$('[data-pos-payment]').forEach((b) => b.classList.toggle("is-active", b === btn));
+  }));
+  $("#posScanBtn").onclick = openPosScanModal;
+  $("#posScanModalClose").onclick = closePosScanModal;
+  $("#posScanModal").addEventListener("click", (e) => {
+    if (e.target.id === "posScanModal") closePosScanModal();
+  });
+  $("#posChargeBtn").onclick = onCharge;
+  $("#posReceiptSkipBtn").onclick = closeReceiptModal;
+  $("#posReceiptPrintBtn").onclick = onPrintReceipt;
+  $("#corteFrom").addEventListener("change", loadCorte);
+  $("#corteTo").addEventListener("change", loadCorte);
+
+  $("#labelBulkPrintBtn").onclick = onPrintBulkLabels;
 
   initProducts();
 
@@ -222,6 +256,7 @@ function renderAll() {
   renderHours();
   renderLinks();
   renderBusiness();
+  renderPosItemList();
 }
 
 function renderServices() {
@@ -410,6 +445,8 @@ async function initProducts() {
       (a.order ?? 0) - (b.order ?? 0) || String(a.name).localeCompare(String(b.name))
     );
     renderProducts();
+    renderPosItemList();
+    renderLabelPickList();
   });
 }
 
@@ -714,7 +751,7 @@ function onPrintLabel() {
   const showPrice = $("#qrShowPrice").checked;
   const dataUrl = $("#qrCanvas").toDataURL("image/png");
   $("#printLabel").innerHTML = `
-    <div style="width:${sizeCm}cm;height:${sizeCm}cm;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2mm;padding:1mm;box-sizing:border-box;font-family:sans-serif;">
+    <div class="print-label-item" style="width:${sizeCm}cm;height:${sizeCm}cm;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2mm;padding:1mm;box-sizing:border-box;font-family:sans-serif;">
       <img src="${dataUrl}" style="width:80%;height:auto;" />
       <div style="font-size:2.2mm;font-weight:700;text-align:center;line-height:1.1;">${escape(qrCurrentProduct.name)}</div>
       ${showPrice ? `<div style="font-size:2mm;">${escape(formatPrice(qrCurrentProduct.price))}</div>` : ""}
@@ -722,6 +759,340 @@ function onPrintLabel() {
   `;
   document.body.classList.add("is-printing-label");
   window.print();
+}
+
+// ============================================================
+// Etiquetas QR (bulk)
+// ============================================================
+function renderLabelPickList() {
+  const list = $("#labelPickList");
+  if (!list) return;
+  const active = products.filter((p) => p.active !== false);
+  if (active.length === 0) {
+    list.innerHTML = `<li class="empty">Aún no hay productos.</li>`;
+    return;
+  }
+  list.innerHTML = active.map((p) => `
+    <li class="label-pick-row">
+      <input type="checkbox" data-label-pick="${p.id}" />
+      <span>${escape(p.name)} <span class="field-hint">${formatPrice(p.price)}</span></span>
+      <input type="number" min="1" step="1" value="1" data-label-qty="${p.id}" title="Copias" />
+    </li>
+  `).join("");
+}
+
+async function onPrintBulkLabels() {
+  const checked = $$('[data-label-pick]').filter((cb) => cb.checked);
+  if (checked.length === 0) { toast("Selecciona al menos un producto.", "error"); return; }
+
+  const sizeCm = $("#labelBulkSize").value;
+  const showPrice = $("#labelBulkShowPrice").checked;
+
+  const items = [];
+  for (const cb of checked) {
+    const id = cb.dataset.labelPick;
+    const p = products.find((x) => x.id === id);
+    if (!p) continue;
+    const qtyInput = document.querySelector(`[data-label-qty="${id}"]`);
+    const qty = Math.max(1, Number(qtyInput?.value) || 1);
+    for (let i = 0; i < qty; i++) items.push(p);
+  }
+
+  const btn = $("#labelBulkPrintBtn");
+  btn.disabled = true;
+  btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Generando…`;
+  try {
+    const labelsHtml = [];
+    for (const p of items) {
+      const canvas = document.createElement("canvas");
+      await renderQrToCanvas(canvas, buildProductUrl(p.id), { size: 200 });
+      const dataUrl = canvas.toDataURL("image/png");
+      labelsHtml.push(`
+        <div class="print-label-item" style="width:${sizeCm}cm;height:${sizeCm}cm;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2mm;padding:1mm;box-sizing:border-box;font-family:sans-serif;">
+          <img src="${dataUrl}" style="width:80%;height:auto;" />
+          <div style="font-size:2.2mm;font-weight:700;text-align:center;line-height:1.1;">${escape(p.name)}</div>
+          ${showPrice ? `<div style="font-size:2mm;">${escape(formatPrice(p.price))}</div>` : ""}
+        </div>
+      `);
+    }
+    $("#printLabel").innerHTML = labelsHtml.join("");
+    document.body.classList.add("is-printing-label");
+    window.print();
+  } catch (err) {
+    toast("Error generando etiquetas: " + err.message, "error");
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<i class="fas fa-print"></i> Imprimir seleccionadas`;
+  }
+}
+
+// ============================================================
+// Caja (POS)
+// ============================================================
+function switchPosView(view) {
+  $$('[data-pos-view]').forEach((b) => b.classList.toggle("is-active", b.dataset.posView === view));
+  $("#posVenderView").hidden = view !== "vender";
+  $("#posCorteView").hidden = view !== "corte";
+  if (view === "corte") loadCorte();
+}
+
+function renderPosItemList() {
+  const list = $("#posItemList");
+  if (!list) return;
+  list.innerHTML = "";
+
+  if (posKind === "service") {
+    const services = (workingData?.services || [])
+      .filter((s) => s.active !== false)
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    if (services.length === 0) {
+      list.innerHTML = `<li class="empty">Sin servicios activos.</li>`;
+      return;
+    }
+    services.forEach((s) => {
+      const li = document.createElement("li");
+      li.className = "pos-item-row";
+      li.innerHTML = `
+        <div>
+          <div class="pos-item-name">${escape(s.name)}</div>
+          ${s.description ? `<div class="pos-item-sub">${escape(s.description)}</div>` : ""}
+        </div>
+        <div class="pos-item-price">${formatPrice(s.price)}</div>
+      `;
+      li.onclick = () => addToCart({ kind: "service", refId: s.id, name: s.name, unitPrice: Number(s.price) || 0 });
+      list.appendChild(li);
+    });
+  } else {
+    const active = products.filter((p) => p.active !== false);
+    if (active.length === 0) {
+      list.innerHTML = `<li class="empty">Aún no hay productos.</li>`;
+      return;
+    }
+    active.forEach((p) => {
+      const stock = Number(p.stock) || 0;
+      const disabled = stock <= 0;
+      const li = document.createElement("li");
+      li.className = "pos-item-row" + (disabled ? " is-disabled" : "");
+      li.innerHTML = `
+        <div>
+          <div class="pos-item-name">${escape(p.name)}</div>
+          <div class="pos-item-sub">${disabled ? "Agotado" : `${stock} ${escape(p.unit || "pza")} disponibles`}</div>
+        </div>
+        <div class="pos-item-price">${formatPrice(p.price)}</div>
+      `;
+      if (!disabled) {
+        li.onclick = () => addToCart({ kind: "product", refId: p.id, name: p.name, unitPrice: Number(p.price) || 0, maxQty: stock });
+      }
+      list.appendChild(li);
+    });
+  }
+}
+
+function addToCart(item) {
+  const existing = posCart.find((i) => i.kind === item.kind && i.refId === item.refId);
+  if (existing) {
+    if (item.kind === "product" && item.maxQty != null && existing.qty + 1 > item.maxQty) {
+      toast("No hay más inventario disponible de este producto.", "error");
+      return;
+    }
+    existing.qty += 1;
+  } else {
+    posCart.push({ ...item, qty: 1 });
+  }
+  renderPosCart();
+}
+
+function changeQty(idx, delta) {
+  const item = posCart[idx];
+  if (!item) return;
+  const newQty = item.qty + delta;
+  if (newQty <= 0) {
+    posCart.splice(idx, 1);
+    renderPosCart();
+    return;
+  }
+  if (item.kind === "product" && item.maxQty != null && newQty > item.maxQty) {
+    toast("No hay más inventario disponible.", "error");
+    return;
+  }
+  item.qty = newQty;
+  renderPosCart();
+}
+
+function renderPosCart() {
+  const list = $("#posCartList");
+  if (posCart.length === 0) {
+    list.innerHTML = `<li class="pos-cart-empty">Agrega servicios o productos a la venta.</li>`;
+  } else {
+    list.innerHTML = "";
+    posCart.forEach((item, idx) => {
+      const li = document.createElement("li");
+      li.className = "pos-cart-row";
+      li.innerHTML = `
+        <div>
+          <div class="pos-cart-row-name">${escape(item.name)}</div>
+          <div class="pos-cart-row-sub">${formatPrice(item.unitPrice)} c/u</div>
+        </div>
+        <div class="pos-qty">
+          <button type="button" data-action="dec">−</button>
+          <span>${item.qty}</span>
+          <button type="button" data-action="inc">+</button>
+        </div>
+        <button type="button" class="icon-btn icon-btn-danger" data-action="remove"><i class="fas fa-times"></i></button>
+      `;
+      li.querySelector('[data-action="dec"]').onclick = () => changeQty(idx, -1);
+      li.querySelector('[data-action="inc"]').onclick = () => changeQty(idx, 1);
+      li.querySelector('[data-action="remove"]').onclick = () => { posCart.splice(idx, 1); renderPosCart(); };
+      list.appendChild(li);
+    });
+  }
+  const total = posCart.reduce((sum, i) => sum + i.unitPrice * i.qty, 0);
+  $("#posTotal").textContent = formatPrice(total);
+}
+
+async function onCharge() {
+  if (posCart.length === 0) { toast("Agrega al menos un artículo.", "error"); return; }
+
+  const btn = $("#posChargeBtn");
+  btn.disabled = true;
+  btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Cobrando…`;
+  try {
+    const items = posCart.map((i) => ({ kind: i.kind, refId: i.refId, name: i.name, unitPrice: i.unitPrice, qty: i.qty }));
+    const sale = await sellCart(items, posPaymentMethod);
+    lastSale = { ...sale, items, paymentMethod: posPaymentMethod, createdAt: new Date().toISOString() };
+    posCart = [];
+    renderPosCart();
+    $("#posReceiptSummary").textContent =
+      `Total cobrado: ${formatPrice(sale.total)} (${posPaymentMethod === "tarjeta" ? "Tarjeta" : "Efectivo"}). ¿Quieres imprimir un recibo?`;
+    $("#posReceiptModal").hidden = false;
+    toast("Venta registrada.", "success");
+  } catch (err) {
+    toast(err.message || "Error al cobrar.", "error");
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<i class="fas fa-cash-register"></i> Cobrar`;
+  }
+}
+
+function closeReceiptModal() {
+  $("#posReceiptModal").hidden = true;
+}
+
+function onPrintReceipt() {
+  if (!lastSale) { closeReceiptModal(); return; }
+  const rows = lastSale.items.map((i) => `
+    <div style="display:flex;justify-content:space-between;font-size:3mm;margin-bottom:1mm;">
+      <span>${i.qty} × ${escape(i.name)}</span>
+      <span>${formatPrice(i.unitPrice * i.qty)}</span>
+    </div>
+  `).join("");
+  $("#printReceipt").innerHTML = `
+    <div style="width:72mm;font-family:monospace;padding:4mm;">
+      <div style="text-align:center;font-weight:700;font-size:4mm;margin-bottom:2mm;">RCR Barber Shop</div>
+      <div style="text-align:center;font-size:2.6mm;margin-bottom:3mm;">${new Date(lastSale.createdAt).toLocaleString("es-MX")}</div>
+      <hr />
+      ${rows}
+      <hr />
+      <div style="display:flex;justify-content:space-between;font-weight:700;font-size:3.4mm;margin-top:2mm;">
+        <span>Total</span><span>${formatPrice(lastSale.total)}</span>
+      </div>
+      <div style="font-size:2.8mm;margin-top:1mm;">Pago: ${lastSale.paymentMethod === "tarjeta" ? "Tarjeta" : "Efectivo"}</div>
+    </div>
+  `;
+  document.body.classList.add("is-printing-receipt");
+  window.print();
+  closeReceiptModal();
+}
+
+async function openPosScanModal() {
+  $("#posScanModal").hidden = false;
+  $("#posScanHint").textContent = "Apunta la cámara al código QR del producto.";
+  posScanStop = await scanQrFromCamera($("#posScanVideo"), onScanResult, onScanError);
+}
+
+function closePosScanModal() {
+  $("#posScanModal").hidden = true;
+  if (posScanStop) { posScanStop(); posScanStop = null; }
+}
+
+function onScanResult(text) {
+  const id = extractProductId(text);
+  const p = products.find((x) => x.id === id);
+  closePosScanModal();
+  if (!p) { toast("No se encontró ese producto.", "error"); return; }
+  const stock = Number(p.stock) || 0;
+  if (stock <= 0) { toast(`"${p.name}" está agotado.`, "error"); return; }
+  addToCart({ kind: "product", refId: p.id, name: p.name, unitPrice: Number(p.price) || 0, maxQty: stock });
+  toast(`"${p.name}" agregado a la venta.`, "success");
+}
+
+function onScanError(err) {
+  $("#posScanHint").textContent = "No se pudo acceder a la cámara: " + err.message;
+}
+
+// ---------- Corte de caja ----------
+function todayIso() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+async function loadCorte() {
+  const fromEl = $("#corteFrom");
+  const toEl = $("#corteTo");
+  if (!fromEl.value) fromEl.value = todayIso();
+  if (!toEl.value) toEl.value = todayIso();
+
+  const startIso = `${fromEl.value}T00:00:00.000Z`;
+  const endIso = `${toEl.value}T23:59:59.999Z`;
+
+  $("#corteList").innerHTML = `<p class="field-hint">Cargando…</p>`;
+  try {
+    const rows = await fetchTransactionsRange(startIso, endIso);
+    renderCorte(rows);
+  } catch (err) {
+    $("#corteList").innerHTML = `<p class="field-hint">Error: ${escape(err.message)}</p>`;
+  }
+}
+
+function renderCorte(rows) {
+  const valid = rows.filter((r) => !r.voided);
+  const efectivo = valid.filter((r) => r.paymentMethod === "efectivo").reduce((s, r) => s + r.total, 0);
+  const tarjeta = valid.filter((r) => r.paymentMethod === "tarjeta").reduce((s, r) => s + r.total, 0);
+
+  $("#corteTotals").innerHTML = `
+    <div class="pos-report-tile"><div class="pos-report-tile-label">Efectivo</div><div class="pos-report-tile-value">${formatPrice(efectivo)}</div></div>
+    <div class="pos-report-tile"><div class="pos-report-tile-label">Tarjeta</div><div class="pos-report-tile-value">${formatPrice(tarjeta)}</div></div>
+    <div class="pos-report-tile"><div class="pos-report-tile-label">Total</div><div class="pos-report-tile-value">${formatPrice(efectivo + tarjeta)}</div></div>
+    <div class="pos-report-tile"><div class="pos-report-tile-label">Ventas</div><div class="pos-report-tile-value">${valid.length}</div></div>
+  `;
+
+  const list = $("#corteList");
+  if (rows.length === 0) {
+    list.innerHTML = `<p class="field-hint">Sin ventas en este rango.</p>`;
+    return;
+  }
+  list.innerHTML = rows.map((r) => `
+    <div class="tx-row ${r.voided ? "is-voided" : ""}">
+      <span class="tx-row-time">${new Date(r.createdAt).toLocaleString("es-MX", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</span>
+      <span class="tx-row-items">${escape((r.items || []).map((i) => `${i.qty}× ${i.name}`).join(", "))}</span>
+      <span class="tx-row-method">${r.paymentMethod === "tarjeta" ? "Tarjeta" : "Efectivo"}</span>
+      <span class="tx-row-total">${formatPrice(r.total)}</span>
+      ${r.voided ? "" : `<button type="button" class="icon-btn icon-btn-danger" data-action="void" data-tx-id="${r.id}" title="Cancelar venta"><i class="fas fa-ban"></i></button>`}
+    </div>
+  `).join("");
+  list.querySelectorAll('[data-action="void"]').forEach((btn) => {
+    btn.onclick = () => onVoidTransaction(btn.dataset.txId);
+  });
+}
+
+async function onVoidTransaction(id) {
+  if (!confirm("¿Cancelar esta venta? Se devolverá el inventario de los productos incluidos.")) return;
+  try {
+    await voidTransaction(id);
+    toast("Venta cancelada.", "success");
+    loadCorte();
+  } catch (err) {
+    toast(err.message || "Error al cancelar.", "error");
+  }
 }
 
 // ============================================================

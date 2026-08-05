@@ -61,7 +61,9 @@
 
     <nav class="tabs" role="tablist">
       <button class="tab is-active" data-tab="servicios" role="tab"><i class="fas fa-tag"></i> Servicios y Precios</button>
+      <button class="tab"           data-tab="caja"      role="tab"><i class="fas fa-cash-register"></i> Caja</button>
       <button class="tab"           data-tab="productos" role="tab"><i class="fas fa-box"></i> Productos</button>
+      <button class="tab"           data-tab="etiquetas" role="tab"><i class="fas fa-qrcode"></i> Etiquetas</button>
       <button class="tab"           data-tab="galeria"   role="tab"><i class="fas fa-images"></i> Galería</button>
       <button class="tab"           data-tab="horarios"  role="tab"><i class="far fa-clock"></i> Horarios</button>
       <button class="tab"           data-tab="enlaces"   role="tab"><i class="fas fa-link"></i> Enlaces</button>
@@ -87,6 +89,61 @@
       <ul class="services-list" id="servicesList"></ul>
     </section>
 
+    <!-- ─── Caja ─── -->
+    <section class="panel" id="panel-caja" hidden>
+      <div class="panel-head">
+        <h2 class="panel-title">Caja</h2>
+      </div>
+
+      <div class="pos-picker-tabs">
+        <button type="button" class="is-active" data-pos-view="vender">Vender</button>
+        <button type="button" data-pos-view="corte">Corte de caja</button>
+      </div>
+
+      <div id="posVenderView">
+        <div class="pos-layout">
+          <div>
+            <div class="pos-picker-tabs">
+              <button type="button" class="is-active" data-pos-kind="service">Servicios</button>
+              <button type="button" data-pos-kind="product">Productos</button>
+            </div>
+            <button type="button" class="btn btn-ghost" id="posScanBtn" style="margin-bottom:10px;">
+              <i class="fas fa-camera"></i> Escanear QR de producto
+            </button>
+            <ul class="pos-item-list" id="posItemList"></ul>
+          </div>
+          <div class="pos-cart">
+            <div class="pos-cart-title">Venta actual</div>
+            <ul class="pos-cart-list" id="posCartList"></ul>
+            <div class="pos-payment">
+              <button type="button" class="is-active" data-pos-payment="efectivo"><i class="fas fa-money-bill-wave"></i> Efectivo</button>
+              <button type="button" data-pos-payment="tarjeta"><i class="fas fa-credit-card"></i> Tarjeta</button>
+            </div>
+            <div class="pos-total-row">
+              <span class="pos-total-label">Total</span>
+              <span class="pos-total-amount" id="posTotal">$0</span>
+            </div>
+            <button type="button" class="btn btn-primary btn-block" id="posChargeBtn"><i class="fas fa-cash-register"></i> Cobrar</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="posCorteView" hidden>
+        <div class="form-grid" style="margin-bottom:14px;">
+          <label class="field">
+            <span class="field-label">Desde</span>
+            <input type="date" id="corteFrom" />
+          </label>
+          <label class="field">
+            <span class="field-label">Hasta</span>
+            <input type="date" id="corteTo" />
+          </label>
+        </div>
+        <div class="pos-report-totals" id="corteTotals"></div>
+        <div id="corteList"></div>
+      </div>
+    </section>
+
     <!-- ─── Productos ─── -->
     <section class="panel" id="panel-productos" hidden>
       <div class="panel-head">
@@ -100,6 +157,35 @@
         guardan al instante, no requieren el botón "Guardar cambios".
       </p>
       <ul class="products-grid" id="productsList"></ul>
+    </section>
+
+    <!-- ─── Etiquetas QR (bulk) ─── -->
+    <section class="panel" id="panel-etiquetas" hidden>
+      <div class="panel-head">
+        <h2 class="panel-title">Etiquetas QR</h2>
+      </div>
+      <p class="panel-help">
+        Selecciona los productos que quieres imprimir (puedes pedir varias copias por producto)
+        y el tamaño de etiqueta. También puedes imprimir una sola desde el propio producto.
+      </p>
+      <ul class="label-pick-list" id="labelPickList"></ul>
+      <div class="form-grid">
+        <label class="field">
+          <span class="field-label">Tamaño de etiqueta</span>
+          <select id="labelBulkSize">
+            <option value="3">3 × 3 cm</option>
+            <option value="4" selected>4 × 4 cm</option>
+            <option value="5">5 × 5 cm</option>
+          </select>
+        </label>
+        <label class="check" style="align-self:center;">
+          <input type="checkbox" id="labelBulkShowPrice" checked />
+          <span>Incluir precio</span>
+        </label>
+      </div>
+      <div class="modal-actions" style="justify-content:flex-start;margin-top:14px;">
+        <button type="button" class="btn btn-primary" id="labelBulkPrintBtn"><i class="fas fa-print"></i> Imprimir seleccionadas</button>
+      </div>
     </section>
 
     <!-- ─── Galería ─── -->
@@ -391,8 +477,36 @@
     </div>
   </div>
 
-  <!-- Print-only single label (populated right before window.print()) -->
+  <!-- Caja: QR scan modal -->
+  <div class="modal" id="posScanModal" hidden>
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3>Escanear QR</h3>
+        <button class="icon-btn" id="posScanModalClose" aria-label="Cerrar"><i class="fas fa-times"></i></button>
+      </div>
+      <video id="posScanVideo" style="width:100%;border-radius:12px;background:#000;" muted playsinline></video>
+      <p class="field-hint" id="posScanHint" style="margin-top:10px;">Apunta la cámara al código QR del producto.</p>
+    </div>
+  </div>
+
+  <!-- Caja: receipt confirm modal -->
+  <div class="modal" id="posReceiptModal" hidden>
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3>Venta registrada</h3>
+      </div>
+      <p class="field-hint" id="posReceiptSummary" style="margin-bottom:14px;"></p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="posReceiptSkipBtn">No, gracias</button>
+        <button type="button" class="btn btn-primary" id="posReceiptPrintBtn"><i class="fas fa-print"></i> Imprimir recibo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Print-only single/bulk labels (populated right before window.print()) -->
   <div id="printLabel"></div>
+  <!-- Print-only receipt (Caja) -->
+  <div id="printReceipt"></div>
 
   <script type="module" src="./app.js"></script>
 </body>
