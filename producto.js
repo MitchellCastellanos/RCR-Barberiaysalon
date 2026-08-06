@@ -84,8 +84,26 @@ async function render() {
           <div class="card-body p-4">
             ${p.category ? `<div class="small text-secondary mb-1" style="font-family:'Montserrat';">${escapeHtml(p.category)}</div>` : ""}
             <h2 style="font-family:'Cinzel'; color:#D4BA67;">${escapeHtml(p.name)}</h2>
+
+            ${p.brand || p.size ? `
+              <div class="d-flex flex-wrap gap-2 mb-2">
+                ${p.brand ? `<span class="badge rounded-pill text-bg-dark border border-warning px-3 py-2">${escapeHtml(p.brand)}</span>` : ""}
+                ${p.size ? `<span class="badge rounded-pill text-bg-dark border border-warning px-3 py-2">${escapeHtml(p.size)}</span>` : ""}
+              </div>` : ""}
+
             <span class="badge rounded-pill text-bg-dark border border-warning px-3 py-2 mb-3">${fmtPriceMxn(p.price)}</span>
             ${p.description ? `<p style="font-family:'Montserrat';">${escapeHtml(p.description)}</p>` : ""}
+
+            ${(p.highlights && p.highlights.length) ? `
+              <ul class="mb-3" style="font-family:'Montserrat';padding-left:1.1rem;">
+                ${p.highlights.map(h => `<li>${escapeHtml(h)}</li>`).join("")}
+              </ul>` : ""}
+
+            ${p.usage ? `
+              <p class="small text-secondary mb-3" style="font-family:'Montserrat';">
+                <b>Modo de uso:</b> ${escapeHtml(p.usage)}
+              </p>` : ""}
+
             <p class="small ${stock <= 0 ? "text-danger" : "text-secondary"}" style="font-family:'Montserrat';">
               ${stock <= 0 ? "Agotado por el momento." : "Disponible en la barbería."}
             </p>

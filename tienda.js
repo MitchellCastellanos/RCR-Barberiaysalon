@@ -45,6 +45,7 @@ function render(products) {
             <div class="card-body text-center p-4">
               ${p.category ? `<div class="small text-secondary mb-1" style="font-family:'Montserrat';">${escapeHtml(p.category)}</div>` : ""}
               <h4 style="font-family:'Cinzel'; color:#D4BA67;">${escapeHtml(p.name)}</h4>
+              ${p.brand ? `<div class="small text-secondary mb-2" style="font-family:'Montserrat';">${escapeHtml(p.brand)}${p.size ? ` · ${escapeHtml(p.size)}` : ""}</div>` : ""}
               ${p.description ? `<p class="mb-3 small" style="font-family:'Montserrat';">${escapeHtml(p.description)}</p>` : ""}
               <span class="badge rounded-pill text-bg-dark border border-warning px-3 py-2">${fmtPriceMxn(p.price)}</span>
               ${stock <= 0 ? `<div class="small text-danger mt-2">Agotado</div>` : ""}

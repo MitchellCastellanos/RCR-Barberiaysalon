@@ -108,7 +108,7 @@
               <button type="button" data-pos-kind="product">Productos</button>
             </div>
             <button type="button" class="btn btn-ghost" id="posScanBtn" style="margin-bottom:10px;">
-              <i class="fas fa-camera"></i> Escanear QR de producto
+              <i class="fas fa-camera"></i> Escanear producto (QR o código de barras)
             </button>
             <ul class="pos-item-list" id="posItemList"></ul>
           </div>
@@ -181,6 +181,10 @@
         <label class="check" style="align-self:center;">
           <input type="checkbox" id="labelBulkShowPrice" checked />
           <span>Incluir precio</span>
+        </label>
+        <label class="check" style="align-self:center;grid-column:1 / -1;">
+          <input type="checkbox" id="labelBulkShowBarcode" />
+          <span>Incluir código de barras (para venderlas en Caja)</span>
         </label>
       </div>
       <div class="modal-actions" style="justify-content:flex-start;margin-top:14px;">
@@ -390,6 +394,29 @@
           <textarea id="prodDesc" rows="2" maxlength="300"></textarea>
         </label>
 
+        <label class="field">
+          <span class="field-label">Marca</span>
+          <input type="text" id="prodBrand" maxlength="40" placeholder="Ej. RCR" />
+        </label>
+        <label class="field">
+          <span class="field-label">Presentación</span>
+          <input type="text" id="prodSize" maxlength="30" placeholder="Ej. 100 ml" />
+        </label>
+        <label class="field full">
+          <span class="field-label">Características destacadas</span>
+          <textarea id="prodHighlights" rows="3" maxlength="300" placeholder="Una por línea. Ej.:&#10;Fijación fuerte&#10;Acabado mate&#10;Sin parabenos"></textarea>
+          <span class="field-hint">Se muestran como lista en la ficha del producto. Una característica por línea.</span>
+        </label>
+        <label class="field full">
+          <span class="field-label">Modo de uso</span>
+          <textarea id="prodUsage" rows="2" maxlength="300" placeholder="Ej. Aplicar una cantidad pequeña sobre cabello húmedo y peinar."></textarea>
+        </label>
+        <label class="field full">
+          <span class="field-label">Código de barras</span>
+          <input type="text" id="prodBarcode" maxlength="40" placeholder="Se genera automáticamente si lo dejas vacío" />
+          <span class="field-hint">Déjalo vacío para usar el código interno del producto. Si el producto ya trae un código de barras del fabricante, ponlo aquí para usar ese en su lugar.</span>
+        </label>
+
         <div class="field full" id="prodStockInfo" hidden></div>
 
         <div class="field full">
@@ -455,6 +482,7 @@
         <canvas id="qrCanvas" width="256" height="256"></canvas>
         <div class="qr-label-name" id="qrLabelName"></div>
         <div class="qr-label-price" id="qrLabelPrice"></div>
+        <canvas id="qrBarcodeCanvas" hidden></canvas>
       </div>
       <div class="form-grid">
         <label class="field">
@@ -469,6 +497,10 @@
           <input type="checkbox" id="qrShowPrice" checked />
           <span>Incluir precio</span>
         </label>
+        <label class="check" style="align-self:center;grid-column:1 / -1;">
+          <input type="checkbox" id="qrShowBarcode" />
+          <span>Incluir código de barras (para venderlo en Caja)</span>
+        </label>
       </div>
       <div class="modal-actions">
         <button type="button" class="btn btn-ghost" id="qrModalCancelBtn">Cerrar</button>
@@ -477,15 +509,15 @@
     </div>
   </div>
 
-  <!-- Caja: QR scan modal -->
+  <!-- Caja: QR / barcode scan modal -->
   <div class="modal" id="posScanModal" hidden>
     <div class="modal-card">
       <div class="modal-head">
-        <h3>Escanear QR</h3>
+        <h3>Escanear producto</h3>
         <button class="icon-btn" id="posScanModalClose" aria-label="Cerrar"><i class="fas fa-times"></i></button>
       </div>
       <video id="posScanVideo" style="width:100%;border-radius:12px;background:#000;" muted playsinline></video>
-      <p class="field-hint" id="posScanHint" style="margin-top:10px;">Apunta la cámara al código QR del producto.</p>
+      <p class="field-hint" id="posScanHint" style="margin-top:10px;">Apunta la cámara al código QR o al código de barras del producto.</p>
     </div>
   </div>
 

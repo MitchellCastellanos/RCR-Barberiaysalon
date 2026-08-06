@@ -72,6 +72,10 @@ export async function createProduct(input) {
     name: input.name || "",
     description: input.description || "",
     category: input.category || "",
+    brand: input.brand || "",
+    size: input.size || "",
+    highlights: Array.isArray(input.highlights) ? input.highlights : [],
+    usage: input.usage || "",
     price: input.price === "" || input.price == null ? "" : Number(input.price),
     cost: input.cost === "" || input.cost == null ? "" : Number(input.cost),
     unit: input.unit || "pieza",
@@ -80,6 +84,7 @@ export async function createProduct(input) {
     active: input.active !== false,
     order: Number(input.order) || 0,
     photos: [],
+    barcode: input.barcode || id,
     createdAt: nowIso(),
     updatedAt: nowIso(),
   };
