@@ -33,7 +33,7 @@ function notFoundHtml(msg) {
     <div class="text-center text-secondary py-5" style="font-family:'Montserrat';">
       <i class="bi bi-exclamation-circle" style="font-size:2rem;color:#D4BA67;"></i>
       <p class="mt-3">${escapeHtml(msg)}</p>
-      <a href="Tienda.html" class="btn btn-warning fw-semibold mt-2">Ver todos los productos</a>
+      <a href="Productos.html" class="btn btn-warning fw-semibold mt-2">Ver todos los productos</a>
     </div>`;
 }
 

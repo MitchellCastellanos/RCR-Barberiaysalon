@@ -1,6 +1,6 @@
 // ============================================================
-// tienda.js
-// Renders the public product grid on Tienda.html from the same
+// productos.js
+// Renders the public product grid on Productos.html from the same
 // `products` Firestore collection the admin panel writes to.
 // ============================================================
 
@@ -28,7 +28,7 @@ function render(products) {
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
   if (active.length === 0) {
-    grid.innerHTML = `<div class="col-12 text-center text-secondary py-4" style="font-family:'Montserrat';">Próximamente.</div>`;
+    grid.innerHTML = `<div class="col-12 text-center text-secondary py-4" style="font-family:'Montserrat';">Estamos preparando la primera línea. Muy pronto aquí.</div>`;
     return;
   }
 
