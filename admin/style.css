@@ -528,17 +528,31 @@ body {
 .modal-card {
   width: 100%;
   max-width: 480px;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
   background: linear-gradient(180deg, rgba(28,28,28,0.95), rgba(14,14,14,0.98));
   border: 1px solid var(--border-strong);
   border-radius: 18px;
   padding: 22px;
   box-shadow: 0 30px 80px rgba(0,0,0,0.7);
 }
+/* Header and footer pin to the top/bottom of the card's own scroll area —
+   negative margins cancel the card's padding so they span edge-to-edge;
+   `top`/`bottom` at -22px re-cancels that same padding so they sit flush
+   instead of leaving a gap. Long forms (e.g. the product editor) scroll
+   in between without ever hiding the title or the save/cancel buttons. */
 .modal-head {
+  position: sticky;
+  top: -22px;
+  z-index: 2;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 14px;
+  margin: -22px -22px 14px;
+  padding: 20px 22px 14px;
+  background: rgba(20,20,20,0.98);
+  border-radius: 18px 18px 0 0;
+  border-bottom: 1px solid var(--border);
 }
 .modal-head h3 {
   font-family: 'Cinzel', serif;
@@ -549,11 +563,18 @@ body {
 }
 .modal-actions {
   grid-column: 1 / -1;
+  position: sticky;
+  bottom: -22px;
+  z-index: 2;
   display: flex;
   justify-content: flex-end;
   gap: 8px;
-  margin-top: 8px;
   flex-wrap: wrap;
+  margin: 8px -22px -22px;
+  padding: 12px 22px 20px;
+  background: rgba(14,14,14,0.98);
+  border-top: 1px solid var(--border);
+  border-radius: 0 0 18px 18px;
 }
 .modal-actions #svcDeleteBtn { margin-right: auto; }
 
@@ -947,4 +968,8 @@ body {
   .tx-row-method { grid-area: method; justify-self: end; }
   .tx-row-items { grid-area: items; }
   .tx-row-total { grid-area: total; }
+  .modal { padding: 10px; }
+  .modal-card { max-height: calc(100vh - 20px); padding: 16px; }
+  .modal-head { top: -16px; margin: -16px -16px 12px; padding: 16px 16px 12px; }
+  .modal-actions { bottom: -16px; margin: 8px -16px -16px; padding: 10px 16px 16px; }
 }

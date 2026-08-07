@@ -1,6 +1,6 @@
 // ============================================================
 // productos.js
-// Renders the public product grid on Productos.html from the same
+// Renders the public product grid on productos/index.html from the same
 // `products` Firestore collection the admin panel writes to.
 // ============================================================
 
