@@ -732,6 +732,14 @@ body {
 .qr-preview canvas { border-radius: 8px; background: #fff; padding: 8px; }
 .qr-label-name { font-weight: 600; color: var(--text); }
 .qr-label-price { color: var(--gold-light); font-size: 0.9rem; }
+.qr-export-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+.qr-export-row .btn { font-size: 0.78rem; padding: 7px 11px; }
 
 /* Print-only label(s) — one or many, wraps and paginates */
 #printLabel { display: none; }

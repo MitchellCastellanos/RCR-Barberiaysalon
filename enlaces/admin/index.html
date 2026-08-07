@@ -482,8 +482,20 @@
         <canvas id="qrCanvas" width="256" height="256"></canvas>
         <div class="qr-label-name" id="qrLabelName"></div>
         <div class="qr-label-price" id="qrLabelPrice"></div>
+        <div class="qr-export-row">
+          <button type="button" class="btn btn-ghost" id="qrCopyBtn"><i class="fas fa-copy"></i> Copiar QR</button>
+          <button type="button" class="btn btn-ghost" id="qrDownloadBtn"><i class="fas fa-download"></i> Descargar QR</button>
+        </div>
+
         <canvas id="qrBarcodeCanvas" hidden></canvas>
+        <div class="qr-export-row" id="barcodeExportRow" hidden>
+          <button type="button" class="btn btn-ghost" id="barcodeCopyBtn"><i class="fas fa-copy"></i> Copiar código de barras</button>
+          <button type="button" class="btn btn-ghost" id="barcodeDownloadBtn"><i class="fas fa-download"></i> Descargar código de barras</button>
+        </div>
       </div>
+      <p class="field-hint" style="text-align:center;margin-bottom:10px;">
+        "Copiar" los pega directo en Word/PowerPoint/Canva; "Descargar" los guarda como imagen PNG.
+      </p>
       <div class="form-grid">
         <label class="field">
           <span class="field-label">Tamaño de etiqueta</span>

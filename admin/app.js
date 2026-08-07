@@ -162,6 +162,10 @@ async function startApp() {
   });
   $("#qrShowBarcode").addEventListener("change", onToggleQrBarcodePreview);
   $("#qrPrintBtn").onclick = onPrintLabel;
+  $("#qrCopyBtn").onclick = onCopyQr;
+  $("#qrDownloadBtn").onclick = onDownloadQr;
+  $("#barcodeCopyBtn").onclick = onCopyBarcode;
+  $("#barcodeDownloadBtn").onclick = onDownloadBarcode;
   window.addEventListener("afterprint", () => {
     document.body.classList.remove("is-printing-label");
     document.body.classList.remove("is-printing-receipt");
@@ -751,6 +755,7 @@ async function openQrModal(productId) {
   $("#qrLabelPrice").textContent = formatPrice(p.price);
   $("#qrShowBarcode").checked = false;
   $("#qrBarcodeCanvas").hidden = true;
+  $("#barcodeExportRow").hidden = true;
   $("#qrModal").hidden = false;
   try {
     await renderQrToCanvas($("#qrCanvas"), buildProductUrl(p.id), { size: 256 });
@@ -763,6 +768,7 @@ async function onToggleQrBarcodePreview() {
   const show = $("#qrShowBarcode").checked;
   const canvas = $("#qrBarcodeCanvas");
   canvas.hidden = !show;
+  $("#barcodeExportRow").hidden = !show;
   if (show && qrCurrentProduct) {
     try {
       await renderBarcodeToCanvas(canvas, buildBarcodeValue(qrCurrentProduct));
@@ -775,6 +781,59 @@ async function onToggleQrBarcodePreview() {
 function closeQrModal() {
   $("#qrModal").hidden = true;
   qrCurrentProduct = null;
+}
+
+// ---------- Copy / download QR + barcode (for the client's own label designs) ----------
+async function canvasToClipboard(canvas) {
+  const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+  if (!blob) throw new Error("No se pudo generar la imagen.");
+  if (!navigator.clipboard || typeof window.ClipboardItem === "undefined") {
+    throw new Error("Tu navegador no soporta copiar imágenes. Usa \"Descargar\" en su lugar.");
+  }
+  await navigator.clipboard.write([new window.ClipboardItem({ "image/png": blob })]);
+}
+
+function downloadCanvas(canvas, filename) {
+  const link = document.createElement("a");
+  link.href = canvas.toDataURL("image/png");
+  link.download = filename;
+  link.click();
+}
+
+function slugify(s) {
+  return String(s || "producto")
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "") || "producto";
+}
+
+async function onCopyQr() {
+  try {
+    await canvasToClipboard($("#qrCanvas"));
+    toast("QR copiado. Ya lo puedes pegar en Word, Canva, etc.", "success");
+  } catch (err) {
+    toast(err.message || "No se pudo copiar el QR.", "error");
+  }
+}
+
+function onDownloadQr() {
+  if (!qrCurrentProduct) return;
+  downloadCanvas($("#qrCanvas"), `qr-${slugify(qrCurrentProduct.name)}.png`);
+}
+
+async function onCopyBarcode() {
+  try {
+    await canvasToClipboard($("#qrBarcodeCanvas"));
+    toast("Código de barras copiado. Ya lo puedes pegar en Word, Canva, etc.", "success");
+  } catch (err) {
+    toast(err.message || "No se pudo copiar el código de barras.", "error");
+  }
+}
+
+function onDownloadBarcode() {
+  if (!qrCurrentProduct) return;
+  downloadCanvas($("#qrBarcodeCanvas"), `codigo-barras-${slugify(qrCurrentProduct.name)}.png`);
 }
 
 async function onPrintLabel() {
