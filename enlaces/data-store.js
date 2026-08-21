@@ -55,6 +55,41 @@ export async function getStorage() {
   return { storage: storage.getStorage(app), ...storage };
 }
 
+// ---------- Secondary app instances ----------
+// Used to sign in as a *different* account (e.g. verifying an admin's
+// password to authorize a cashier's void, or creating a new cashier
+// account) without disturbing the primary session's currentUser.
+export async function createSecondaryApp() {
+  const { initializeApp } = await import(
+    "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js"
+  );
+  const name = `secondary-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  return initializeApp(firebaseConfig, name);
+}
+
+export async function getAuthForApp(app) {
+  const auth = await import(
+    "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js"
+  );
+  return { auth: auth.getAuth(app), ...auth };
+}
+
+export async function getFirestoreForApp(app) {
+  const fs = await import(
+    "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js"
+  );
+  return { db: fs.getFirestore(app), ...fs };
+}
+
+export async function destroySecondaryApp(app) {
+  try {
+    const { deleteApp } = await import(
+      "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js"
+    );
+    await deleteApp(app);
+  } catch (_) { /* best effort */ }
+}
+
 // ---------- Default data ----------
 async function loadDefaults() {
   // Use a relative path from this script's location to find the JSON.

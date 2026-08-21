@@ -1,18 +1,26 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    // Gallery: public read, authenticated upload (size + type limited).
+    // Storage rules v2 can cross-check the default Firestore database.
+    // Only an admin (per users/{uid}.role) may upload — cashiers never
+    // touch product photos or gallery images.
+    function isAdmin() {
+      return request.auth != null &&
+        firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Gallery: public read, admin-only upload (size + type limited).
     match /gallery/{file} {
       allow read: if true;
-      allow write: if request.auth != null
+      allow write: if isAdmin()
         && request.resource.size < 10 * 1024 * 1024 // 10 MB
         && request.resource.contentType.matches('image/.*');
     }
     // Product photos: public read (storefront + QR landing page),
-    // authenticated upload (size + type limited).
+    // admin-only upload (size + type limited).
     match /products/{productId}/{file} {
       allow read: if true;
-      allow write: if request.auth != null
+      allow write: if isAdmin()
         && request.resource.size < 10 * 1024 * 1024 // 10 MB
         && request.resource.contentType.matches('image/.*');
     }

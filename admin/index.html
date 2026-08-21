@@ -50,6 +50,7 @@
         </div>
       </div>
       <div class="topbar-right">
+        <span class="user-badge" id="userBadge"></span>
         <a href="../enlaces/" target="_blank" rel="noopener" class="btn btn-ghost">
           <i class="fas fa-external-link-alt"></i> Ver página
         </a>
@@ -68,6 +69,7 @@
       <button class="tab"           data-tab="horarios"  role="tab"><i class="far fa-clock"></i> Horarios</button>
       <button class="tab"           data-tab="enlaces"   role="tab"><i class="fas fa-link"></i> Enlaces</button>
       <button class="tab"           data-tab="negocio"   role="tab"><i class="fas fa-store"></i> Negocio</button>
+      <button class="tab"           data-tab="usuarios"  role="tab"><i class="fas fa-users"></i> Usuarios</button>
     </nav>
 
     <!-- Save bar -->
@@ -137,6 +139,12 @@
           <label class="field">
             <span class="field-label">Hasta</span>
             <input type="date" id="corteTo" />
+          </label>
+          <label class="field" id="corteCashierField" hidden>
+            <span class="field-label">Cajero</span>
+            <select id="corteCashier">
+              <option value="all">Todos (corte total)</option>
+            </select>
           </label>
         </div>
         <div class="pos-report-totals" id="corteTotals"></div>
@@ -294,6 +302,20 @@
           <input type="number" step="0.1" min="0" max="5" data-business-key="rating" />
         </label>
       </div>
+    </section>
+
+    <!-- ─── Usuarios ─── -->
+    <section class="panel" id="panel-usuarios" hidden>
+      <div class="panel-head">
+        <h2 class="panel-title">Usuarios</h2>
+        <button class="btn btn-primary" id="addCashierBtn"><i class="fas fa-user-plus"></i> Agregar cajero</button>
+      </div>
+      <p class="panel-help">
+        Los cajeros solo pueden usar la pestaña Caja: cobrar y ver su propio corte de caja.
+        No pueden editar servicios, precios, productos ni nada más. Cancelar una venta
+        siempre requiere que un administrador autorice con su propio correo y contraseña.
+      </p>
+      <ul class="users-list" id="usersList"></ul>
     </section>
 
   </main>
@@ -544,6 +566,64 @@
         <button type="button" class="btn btn-ghost" id="posReceiptSkipBtn">No, gracias</button>
         <button type="button" class="btn btn-primary" id="posReceiptPrintBtn"><i class="fas fa-print"></i> Imprimir recibo</button>
       </div>
+    </div>
+  </div>
+
+  <!-- New cashier modal -->
+  <div class="modal" id="cashierModal" hidden>
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3>Nuevo cajero</h3>
+        <button class="icon-btn" id="cashierModalClose" aria-label="Cerrar"><i class="fas fa-times"></i></button>
+      </div>
+      <form id="cashierForm" class="form-grid">
+        <label class="field full">
+          <span class="field-label">Nombre <span class="req">*</span></span>
+          <input type="text" id="cashierName" required maxlength="60" />
+        </label>
+        <label class="field full">
+          <span class="field-label">Correo <span class="req">*</span></span>
+          <input type="email" id="cashierEmail" required autocomplete="off" />
+        </label>
+        <label class="field full">
+          <span class="field-label">Contraseña <span class="req">*</span></span>
+          <input type="password" id="cashierPassword" required minlength="6" autocomplete="new-password" />
+          <span class="field-hint">Mínimo 6 caracteres. El cajero podrá cambiarla después restableciéndola por correo.</span>
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" id="cashierCancelBtn">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="cashierSaveBtn"><i class="fas fa-check"></i> Crear cajero</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Admin authorization modal (cashier voiding a sale) -->
+  <div class="modal" id="adminAuthModal" hidden>
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3>Autorización de administrador</h3>
+        <button class="icon-btn" id="adminAuthModalClose" aria-label="Cerrar"><i class="fas fa-times"></i></button>
+      </div>
+      <p class="field-hint" style="margin-bottom:12px;">
+        Cancelar una venta requiere el correo y contraseña de un administrador.
+        Tu sesión como cajero no se cierra.
+      </p>
+      <form id="adminAuthForm" class="form-grid">
+        <label class="field full">
+          <span class="field-label">Correo de administrador</span>
+          <input type="email" id="adminAuthEmail" required autocomplete="off" />
+        </label>
+        <label class="field full">
+          <span class="field-label">Contraseña</span>
+          <input type="password" id="adminAuthPassword" required autocomplete="off" />
+        </label>
+        <p class="login-error" id="adminAuthError" hidden></p>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" id="adminAuthCancelBtn">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="adminAuthSubmitBtn"><i class="fas fa-check"></i> Autorizar y cancelar</button>
+        </div>
+      </form>
     </div>
   </div>
 

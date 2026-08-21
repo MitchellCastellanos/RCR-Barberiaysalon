@@ -21,10 +21,13 @@ function nowIso() {
 /**
  * cartItems: [{ kind: "service"|"product", refId, name, unitPrice, qty }]
  * paymentMethod: "efectivo" | "tarjeta"
+ * cashier: { uid, name } — whoever is signed in and ringing up the sale;
+ * firestore.rules requires cashierUid to match the caller's own auth uid.
  */
-export async function sellCart(cartItems, paymentMethod, notes = "") {
+export async function sellCart(cartItems, paymentMethod, cashier, notes = "") {
   if (!FIREBASE_ENABLED) throw new Error("Firebase no está habilitado.");
   if (!cartItems || cartItems.length === 0) throw new Error("El carrito está vacío.");
+  if (!cashier || !cashier.uid) throw new Error("No se pudo identificar al cajero.");
 
   const { db, doc, collection, runTransaction } = await getFirestore();
   const txId = makeId();
@@ -82,8 +85,11 @@ export async function sellCart(cartItems, paymentMethod, notes = "") {
       paymentMethod,
       total,
       notes: notes || "",
+      cashierUid: cashier.uid,
+      cashierName: cashier.name || "",
       voided: false,
       voidedAt: null,
+      voidedBy: null,
       createdAt: nowIso(),
     });
   });
@@ -91,10 +97,16 @@ export async function sellCart(cartItems, paymentMethod, notes = "") {
   return { id: txId, total };
 }
 
-/** Reverses stock for a sale's product lines and marks it voided. */
-export async function voidTransaction(transactionId) {
+/**
+ * Reverses stock for a sale's product lines and marks it voided.
+ * Voiding is admin-only per firestore.rules, so `fsCtx` — if provided —
+ * should come from an admin-authorized session (see users-store.js
+ * withAdminAuthorization) when the caller signed in is a cashier.
+ * Defaults to the primary (currently signed-in) session's Firestore.
+ */
+export async function voidTransaction(transactionId, fsCtx = null, voidedByUid = null) {
   if (!FIREBASE_ENABLED) throw new Error("Firebase no está habilitado.");
-  const { db, doc, collection, runTransaction } = await getFirestore();
+  const { db, doc, collection, runTransaction } = fsCtx || (await getFirestore());
   const txRef = doc(db, "transactions", transactionId);
 
   await runTransaction(db, async (tx) => {
@@ -127,14 +139,41 @@ export async function voidTransaction(transactionId) {
       });
     });
 
-    tx.update(txRef, { voided: true, voidedAt: nowIso() });
+    tx.update(txRef, { voided: true, voidedAt: nowIso(), voidedBy: voidedByUid });
   });
 }
 
-/** One-shot fetch of transactions between two ISO timestamps (inclusive), most recent first. */
-export async function fetchTransactionsRange(startIso, endIso) {
+/**
+ * One-shot fetch of transactions between two ISO timestamps (inclusive),
+ * most recent first.
+ *
+ * `cashierUid`: pass the caller's own uid when they are a cashier. Firestore
+ * list rules must be able to prove from the *query itself* — not just from
+ * evaluating the rule per returned document — that every possible result is
+ * one the caller may read; a date-range-only query can't offer that proof
+ * for the "only your own sales" rule, so a cashier's request would be
+ * rejected outright without this filter. It's an equality-only query (no
+ * composite index needed) — the date range is then applied client-side over
+ * that single cashier's (small) result set. Admins omit this and get the
+ * full range query across everyone, which the "isAdmin()" rule allows
+ * unconditionally.
+ */
+export async function fetchTransactionsRange(startIso, endIso, cashierUid = null) {
   if (!FIREBASE_ENABLED) return [];
   const { db, collection, query, where, orderBy, getDocs } = await getFirestore();
+
+  if (cashierUid) {
+    const q = query(
+      collection(db, "transactions"),
+      where("cashierUid", "==", cashierUid),
+      orderBy("createdAt", "desc")
+    );
+    const snap = await getDocs(q);
+    return snap.docs
+      .map((d) => d.data())
+      .filter((r) => r.createdAt >= startIso && r.createdAt <= endIso);
+  }
+
   const q = query(
     collection(db, "transactions"),
     where("createdAt", ">=", startIso),

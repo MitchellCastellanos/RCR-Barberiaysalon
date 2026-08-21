@@ -400,12 +400,49 @@ body {
   padding: 2px 7px;
   border-radius: 999px;
   text-transform: uppercase;
+  background: rgba(255,255,255,0.08);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
 }
 .chip-off {
   background: rgba(224,72,72,0.15);
   color: #F5C5C5;
   border: 1px solid rgba(224,72,72,0.4);
 }
+.chip-admin {
+  background: rgba(212,186,103,0.15);
+  color: var(--gold-light);
+  border: 1px solid rgba(212,186,103,0.4);
+}
+
+/* ============================================================
+   USERS / ROLES
+   ============================================================ */
+.user-badge {
+  display: flex;
+  align-items: center;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  padding: 0 6px;
+}
+.btn-sm { padding: 6px 10px; font-size: 0.76rem; }
+.users-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.user-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.user-row.is-inactive { opacity: 0.55; }
+.user-row.is-self { border-color: rgba(212,186,103,0.4); }
+.user-row-name { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.user-row-email { font-size: 0.78rem; color: var(--text-faint); margin-top: 2px; }
+.user-row-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
 /* ============================================================
    GALLERY ROWS
@@ -917,8 +954,14 @@ body {
   font-size: 0.82rem;
 }
 .tx-row.is-voided { opacity: 0.5; text-decoration: line-through; }
+.tx-row.has-cashier { grid-template-columns: auto 1fr auto auto auto auto; }
 .tx-row-time { color: var(--text-faint); font-size: 0.74rem; }
 .tx-row-items { color: var(--text-muted); }
+.tx-row-cashier {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
 .tx-row-method {
   font-size: 0.66rem;
   font-weight: 700;
@@ -971,11 +1014,13 @@ body {
   .tab { font-size: 0.78rem; padding: 8px 10px; }
   .pos-layout { grid-template-columns: 1fr; }
   .pos-cart { position: static; }
-  .tx-row { grid-template-columns: 1fr auto; grid-template-areas: "time method" "items items" "total total"; }
+  .tx-row, .tx-row.has-cashier { grid-template-columns: 1fr auto; grid-template-areas: "time method" "items items" "cashier cashier" "total total"; }
   .tx-row-time { grid-area: time; }
   .tx-row-method { grid-area: method; justify-self: end; }
   .tx-row-items { grid-area: items; }
+  .tx-row-cashier { grid-area: cashier; }
   .tx-row-total { grid-area: total; }
+  .user-row { flex-direction: column; align-items: flex-start; }
   .modal { padding: 10px; }
   .modal-card { max-height: calc(100vh - 20px); padding: 16px; }
   .modal-head { top: -16px; margin: -16px -16px 12px; padding: 16px 16px 12px; }

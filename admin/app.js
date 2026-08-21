@@ -15,6 +15,10 @@ import { buildProductUrl, renderQrToCanvas } from "../enlaces/qr.js";
 import { buildBarcodeValue, renderBarcodeToCanvas } from "../enlaces/barcode.js";
 import { sellCart, voidTransaction, fetchTransactionsRange } from "../enlaces/transactions-store.js";
 import { scanCodeFromCamera, extractProductId } from "../enlaces/scan.js";
+import {
+  resolveMyProfile, subscribeUsers, createCashier, setUserActive,
+  sendPasswordReset, withAdminAuthorization,
+} from "../enlaces/users-store.js";
 
 const $  = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
@@ -24,6 +28,10 @@ let currentData = null;        // last persisted data (server snapshot)
 let workingData = null;        // local edits (pre-save)
 let dirty = false;
 let authUser = null;
+let myProfile = null;   // { uid, email, displayName, role, active }
+let allUsers = [];      // admin only: every users/{uid} profile, for Usuarios tab + corte filter
+let unsubUsers = null;
+let corteCashierFilter = "all"; // "all" (admin) | a uid
 
 // Products/inventory save immediately to their own Firestore collection —
 // unlike services/gallery they don't go through the workingData/save-bar flow.
@@ -54,11 +62,27 @@ let lastSale = null;           // last completed sale, for the optional receipt
 
   // Wait for auth state
   try {
-    const { auth, onAuthStateChanged } = await getAuth();
-    onAuthStateChanged(auth, (user) => {
+    const { auth, onAuthStateChanged, signOut } = await getAuth();
+    onAuthStateChanged(auth, async (user) => {
       authUser = user;
-      if (user) startApp();
-      else showLogin();
+      if (!user) {
+        myProfile = null;
+        showLogin();
+        return;
+      }
+      try {
+        myProfile = await resolveMyProfile(user);
+      } catch (err) {
+        await signOut(auth);
+        showLoginError("Error verificando tu cuenta: " + err.message);
+        return;
+      }
+      if (!myProfile || myProfile.active === false) {
+        await signOut(auth);
+        showLoginError("Tu cuenta no tiene acceso asignado. Contacta al administrador.");
+        return;
+      }
+      startApp();
     });
   } catch (err) {
     showLoginError("No se pudo conectar a Firebase: " + err.message);
@@ -109,11 +133,19 @@ function humanizeAuthError(err) {
     return "Demasiados intentos. Espera unos minutos.";
   if (code.includes("network"))
     return "Sin conexión a internet.";
-  return err.message || "No se pudo iniciar sesión.";
+  if (code.includes("email-already-in-use"))
+    return "Ya existe una cuenta con ese correo.";
+  if (code.includes("weak-password"))
+    return "La contraseña es muy débil (mínimo 6 caracteres).";
+  if (code.includes("invalid-email"))
+    return "Correo inválido.";
+  return err.message || "No se pudo completar la operación.";
 }
 
 async function logout() {
   const { auth, signOut } = await getAuth();
+  if (unsubUsers) { unsubUsers(); unsubUsers = null; }
+  allUsers = [];
   await signOut(auth);
 }
 
@@ -193,6 +225,25 @@ async function startApp() {
   $("#posReceiptPrintBtn").onclick = onPrintReceipt;
   $("#corteFrom").addEventListener("change", loadCorte);
   $("#corteTo").addEventListener("change", loadCorte);
+  $("#corteCashier").addEventListener("change", (e) => {
+    corteCashierFilter = e.target.value;
+    loadCorte();
+  });
+
+  $("#addCashierBtn").onclick = () => openCashierModal();
+  $("#cashierModalClose").onclick = closeCashierModal;
+  $("#cashierCancelBtn").onclick = closeCashierModal;
+  $("#cashierForm").addEventListener("submit", onCashierFormSubmit);
+  $("#cashierModal").addEventListener("click", (e) => {
+    if (e.target.id === "cashierModal") closeCashierModal();
+  });
+
+  $("#adminAuthModalClose").onclick = closeAdminAuthModal;
+  $("#adminAuthCancelBtn").onclick = closeAdminAuthModal;
+  $("#adminAuthForm").addEventListener("submit", onAdminAuthSubmit);
+  $("#adminAuthModal").addEventListener("click", (e) => {
+    if (e.target.id === "adminAuthModal") closeAdminAuthModal();
+  });
 
   $("#labelBulkPrintBtn").onclick = onPrintBulkLabels;
 
@@ -220,7 +271,166 @@ async function startApp() {
     if (dirty) { e.preventDefault(); e.returnValue = ""; }
   });
 
+  applyRoleUI();
+  if (myProfile.role === "admin") initUsers();
+
   await loadData();
+}
+
+// ============================================================
+// Roles / multi-user access
+// ============================================================
+function isAdminRole() {
+  return myProfile?.role === "admin";
+}
+
+function applyRoleUI() {
+  const admin = isAdminRole();
+  $$(".tab").forEach((t) => {
+    const allowed = admin || t.dataset.tab === "caja";
+    t.hidden = !allowed;
+  });
+  if (!admin) switchTab("caja");
+
+  $("#userBadge").textContent = `${myProfile.displayName || myProfile.email} · ${admin ? "Administrador" : "Cajero"}`;
+
+  // A cashier only ever sees their own corte — no filter, no "todos".
+  $("#corteCashierField").hidden = !admin;
+  if (!admin) corteCashierFilter = myProfile.uid;
+}
+
+async function initUsers() {
+  unsubUsers = await subscribeUsers((list) => {
+    allUsers = list.slice().sort((a, b) => String(a.displayName).localeCompare(String(b.displayName)));
+    renderUsers();
+    renderCorteCashierOptions();
+  });
+}
+
+function renderUsers() {
+  const list = $("#usersList");
+  if (!list) return;
+  list.innerHTML = "";
+  allUsers.forEach((u) => {
+    const li = document.createElement("li");
+    li.className = "user-row" + (u.active === false ? " is-inactive" : "");
+    const isSelf = u.uid === myProfile.uid;
+    li.innerHTML = `
+      <div class="user-row-main">
+        <div class="user-row-name">
+          ${escape(u.displayName || u.email)}
+          <span class="chip ${u.role === "admin" ? "chip-admin" : ""}">${u.role === "admin" ? "Admin" : "Cajero"}</span>
+          ${u.active === false ? `<span class="chip chip-off">inactivo</span>` : ""}
+        </div>
+        <div class="user-row-email">${escape(u.email)}</div>
+      </div>
+      <div class="user-row-actions">
+        <button type="button" class="btn btn-ghost btn-sm" data-action="reset">Restablecer contraseña</button>
+        ${u.role !== "admin" ? `<button type="button" class="btn btn-ghost btn-sm" data-action="toggle">${u.active === false ? "Activar" : "Desactivar"}</button>` : ""}
+      </div>
+    `;
+    li.querySelector('[data-action="reset"]').onclick = () => onResetPassword(u);
+    const toggleBtn = li.querySelector('[data-action="toggle"]');
+    if (toggleBtn) toggleBtn.onclick = () => onToggleCashierActive(u);
+    if (isSelf) li.classList.add("is-self");
+    list.appendChild(li);
+  });
+}
+
+function openCashierModal() {
+  $("#cashierForm").reset();
+  $("#cashierModal").hidden = false;
+  setTimeout(() => $("#cashierName").focus(), 50);
+}
+
+function closeCashierModal() {
+  $("#cashierModal").hidden = true;
+}
+
+async function onCashierFormSubmit(ev) {
+  ev.preventDefault();
+  const displayName = $("#cashierName").value.trim();
+  const email = $("#cashierEmail").value.trim();
+  const password = $("#cashierPassword").value;
+  if (!displayName || !email || !password) { toast("Completa todos los campos.", "error"); return; }
+  if (password.length < 6) { toast("La contraseña debe tener al menos 6 caracteres.", "error"); return; }
+
+  const btn = $("#cashierSaveBtn");
+  btn.disabled = true;
+  btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Creando…`;
+  try {
+    await createCashier({ email, password, displayName });
+    toast(`Cuenta de cajero creada para ${displayName}.`, "success");
+    closeCashierModal();
+  } catch (err) {
+    toast(humanizeAuthError(err), "error");
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<i class="fas fa-check"></i> Crear cajero`;
+  }
+}
+
+async function onToggleCashierActive(u) {
+  const makeActive = u.active === false;
+  if (!confirm(`¿${makeActive ? "Activar" : "Desactivar"} a "${u.displayName}"?`)) return;
+  try {
+    await setUserActive(u.uid, makeActive);
+    toast(makeActive ? "Cuenta activada." : "Cuenta desactivada.", "success");
+  } catch (err) {
+    toast(err.message || "Error al actualizar la cuenta.", "error");
+  }
+}
+
+async function onResetPassword(u) {
+  if (!confirm(`¿Enviar correo de restablecimiento de contraseña a ${u.email}?`)) return;
+  try {
+    await sendPasswordReset(u.email);
+    toast("Correo de restablecimiento enviado.", "success");
+  } catch (err) {
+    toast(err.message || "Error al enviar el correo.", "error");
+  }
+}
+
+// ---------- Admin-authorized void (used when a cashier cancels a sale) ----------
+let pendingVoidTxId = null;
+
+function openAdminAuthModal(txId) {
+  pendingVoidTxId = txId;
+  $("#adminAuthForm").reset();
+  $("#adminAuthError").hidden = true;
+  $("#adminAuthModal").hidden = false;
+  setTimeout(() => $("#adminAuthEmail").focus(), 50);
+}
+
+function closeAdminAuthModal() {
+  $("#adminAuthModal").hidden = true;
+  pendingVoidTxId = null;
+}
+
+async function onAdminAuthSubmit(ev) {
+  ev.preventDefault();
+  const txId = pendingVoidTxId;
+  if (!txId) return;
+  const email = $("#adminAuthEmail").value.trim();
+  const password = $("#adminAuthPassword").value;
+
+  const btn = $("#adminAuthSubmitBtn");
+  btn.disabled = true;
+  btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Verificando…`;
+  try {
+    await withAdminAuthorization(email, password, (fsCtx, adminUser) =>
+      voidTransaction(txId, fsCtx, adminUser.uid)
+    );
+    toast("Venta cancelada.", "success");
+    closeAdminAuthModal();
+    loadCorte();
+  } catch (err) {
+    $("#adminAuthError").textContent = err.message || "No se pudo autorizar la cancelación.";
+    $("#adminAuthError").hidden = false;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<i class="fas fa-check"></i> Autorizar y cancelar`;
+  }
 }
 
 async function loadData() {
@@ -234,7 +444,8 @@ async function loadData() {
 
     // First-time seed: if Firestore has no document yet, write the
     // current defaults so the live page reads from Firestore from now on.
-    if (!fromRemote) {
+    // Only admin can write config/site — a cashier just keeps the defaults.
+    if (!fromRemote && isAdminRole()) {
       try {
         await saveData(currentData);
         toast("Datos iniciales sembrados en Firebase. ¡Edita lo que necesites!", "success");
@@ -1071,7 +1282,8 @@ async function onCharge() {
   btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Cobrando…`;
   try {
     const items = posCart.map((i) => ({ kind: i.kind, refId: i.refId, name: i.name, unitPrice: i.unitPrice, qty: i.qty }));
-    const sale = await sellCart(items, posPaymentMethod);
+    const cashier = { uid: myProfile.uid, name: myProfile.displayName || myProfile.email };
+    const sale = await sellCart(items, posPaymentMethod, cashier);
     lastSale = { ...sale, items, paymentMethod: posPaymentMethod, createdAt: new Date().toISOString() };
     posCart = [];
     renderPosCart();
@@ -1148,6 +1360,18 @@ function todayIso() {
   return new Date().toISOString().slice(0, 10);
 }
 
+let lastCorteRows = [];
+
+function renderCorteCashierOptions() {
+  const sel = $("#corteCashier");
+  if (!sel || !isAdminRole()) return;
+  const current = sel.value || "all";
+  sel.innerHTML = `<option value="all">Todos (corte total)</option>` +
+    allUsers.map((u) => `<option value="${u.uid}">${escape(u.displayName || u.email)}</option>`).join("");
+  sel.value = allUsers.some((u) => u.uid === current) || current === "all" ? current : "all";
+  corteCashierFilter = sel.value;
+}
+
 async function loadCorte() {
   const fromEl = $("#corteFrom");
   const toEl = $("#corteTo");
@@ -1159,14 +1383,23 @@ async function loadCorte() {
 
   $("#corteList").innerHTML = `<p class="field-hint">Cargando…</p>`;
   try {
-    const rows = await fetchTransactionsRange(startIso, endIso);
-    renderCorte(rows);
+    // Cashiers must query filtered by their own uid — firestore.rules can
+    // only allow a "list" query it can prove is scoped to their own sales
+    // (see fetchTransactionsRange). Admin fetches everyone's.
+    const cashierUid = isAdminRole() ? null : myProfile.uid;
+    lastCorteRows = await fetchTransactionsRange(startIso, endIso, cashierUid);
+    renderCorte();
   } catch (err) {
     $("#corteList").innerHTML = `<p class="field-hint">Error: ${escape(err.message)}</p>`;
   }
 }
 
-function renderCorte(rows) {
+function renderCorte() {
+  const admin = isAdminRole();
+  const rows = admin && corteCashierFilter !== "all"
+    ? lastCorteRows.filter((r) => r.cashierUid === corteCashierFilter)
+    : lastCorteRows;
+
   const valid = rows.filter((r) => !r.voided);
   const efectivo = valid.filter((r) => r.paymentMethod === "efectivo").reduce((s, r) => s + r.total, 0);
   const tarjeta = valid.filter((r) => r.paymentMethod === "tarjeta").reduce((s, r) => s + r.total, 0);
@@ -1184,9 +1417,10 @@ function renderCorte(rows) {
     return;
   }
   list.innerHTML = rows.map((r) => `
-    <div class="tx-row ${r.voided ? "is-voided" : ""}">
+    <div class="tx-row ${admin ? "has-cashier" : ""} ${r.voided ? "is-voided" : ""}">
       <span class="tx-row-time">${new Date(r.createdAt).toLocaleString("es-MX", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</span>
       <span class="tx-row-items">${escape((r.items || []).map((i) => `${i.qty}× ${i.name}`).join(", "))}</span>
+      ${admin ? `<span class="tx-row-cashier">${escape(r.cashierName || "—")}</span>` : ""}
       <span class="tx-row-method">${r.paymentMethod === "tarjeta" ? "Tarjeta" : "Efectivo"}</span>
       <span class="tx-row-total">${formatPrice(r.total)}</span>
       ${r.voided ? "" : `<button type="button" class="icon-btn icon-btn-danger" data-action="void" data-tx-id="${r.id}" title="Cancelar venta"><i class="fas fa-ban"></i></button>`}
@@ -1199,8 +1433,14 @@ function renderCorte(rows) {
 
 async function onVoidTransaction(id) {
   if (!confirm("¿Cancelar esta venta? Se devolverá el inventario de los productos incluidos.")) return;
+
+  if (!isAdminRole()) {
+    // Cashiers can't void on their own — an admin has to authorize it live.
+    openAdminAuthModal(id);
+    return;
+  }
   try {
-    await voidTransaction(id);
+    await voidTransaction(id, null, myProfile.uid);
     toast("Venta cancelada.", "success");
     loadCorte();
   } catch (err) {
