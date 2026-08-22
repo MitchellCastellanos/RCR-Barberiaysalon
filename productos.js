@@ -37,7 +37,7 @@ function render(products) {
     const stock = Number(p.stock) || 0;
     return `
       <div class="col-12 col-md-6 col-lg-4">
-        <a href="producto.html?id=${encodeURIComponent(p.id)}" class="text-decoration-none">
+        <a href="../producto.html?id=${encodeURIComponent(p.id)}" class="text-decoration-none">
           <div class="card h-100 product-shop-card bg-dark text-white border-warning">
             ${photo
               ? `<img src="${escapeHtml(photo)}" alt="${escapeHtml(p.name)}" class="product-shop-photo" loading="lazy">`

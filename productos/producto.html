@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Redirigiendo…</title>
+<script>
+  location.replace("../producto.html" + location.search + location.hash);
+</script>
+</head>
+<body>
+  <p>Redirigiendo al producto… <a href="../producto.html">Continuar</a></p>
+  <script>
+    document.querySelector("a").href = "../producto.html" + location.search + location.hash;
+  </script>
+</body>
+</html>
