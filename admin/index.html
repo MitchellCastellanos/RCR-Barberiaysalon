@@ -41,16 +41,53 @@
 
   <!-- App -->
   <main class="app" id="app" hidden>
-    <header class="topbar">
-      <div class="topbar-left">
-        <img src="../Images/Logo_RCR_2025.PNG" alt="" class="topbar-logo" />
+
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <img src="../Images/Logo_RCR_2025.PNG" alt="" class="sidebar-logo" />
         <div>
-          <h1 class="topbar-title">Panel de Control</h1>
-          <p class="topbar-sub">RCR Barber Shop</p>
+          <p class="sidebar-title">Panel</p>
+          <p class="sidebar-sub">RCR Barber Shop</p>
         </div>
       </div>
-      <div class="topbar-right">
+
+      <nav class="sidebar-nav" role="tablist">
+        <div class="nav-group">
+          <p class="nav-group-label">Operación</p>
+          <button class="tab is-active" data-tab="caja"      data-title="Caja"                 role="tab"><i class="fas fa-cash-register"></i> Caja</button>
+          <button class="tab"           data-tab="servicios" data-title="Servicios y precios"  role="tab"><i class="fas fa-tag"></i> Servicios</button>
+          <button class="tab"           data-tab="productos" data-title="Productos"            role="tab"><i class="fas fa-box"></i> Productos</button>
+          <button class="tab"           data-tab="etiquetas" data-title="Etiquetas QR"         role="tab"><i class="fas fa-qrcode"></i> Etiquetas</button>
+        </div>
+        <div class="nav-group">
+          <p class="nav-group-label">Página</p>
+          <button class="tab" data-tab="galeria"  data-title="Galería"  role="tab"><i class="fas fa-images"></i> Galería</button>
+          <button class="tab" data-tab="horarios" data-title="Horarios" role="tab"><i class="far fa-clock"></i> Horarios</button>
+          <button class="tab" data-tab="enlaces"  data-title="Enlaces"  role="tab"><i class="fas fa-link"></i> Enlaces</button>
+          <button class="tab" data-tab="negocio"  data-title="Negocio"  role="tab"><i class="fas fa-store"></i> Negocio</button>
+        </div>
+        <div class="nav-group">
+          <p class="nav-group-label">Equipo</p>
+          <button class="tab" data-tab="usuarios" data-title="Usuarios" role="tab"><i class="fas fa-users"></i> Usuarios</button>
+        </div>
+      </nav>
+
+      <div class="sidebar-foot">
         <span class="user-badge" id="userBadge"></span>
+      </div>
+    </aside>
+
+    <div class="sidebar-backdrop" id="sidebarBackdrop" hidden></div>
+
+    <div class="app-body">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="icon-btn sidebar-toggle" id="sidebarToggle" type="button" aria-label="Abrir menú" aria-expanded="false">
+          <i class="fas fa-bars"></i>
+        </button>
+        <h1 class="topbar-title" id="topbarTitle">Caja</h1>
+      </div>
+      <div class="topbar-right">
         <a href="../enlaces/" target="_blank" rel="noopener" class="btn btn-ghost">
           <i class="fas fa-external-link-alt"></i> Ver página
         </a>
@@ -59,18 +96,6 @@
         </button>
       </div>
     </header>
-
-    <nav class="tabs" role="tablist">
-      <button class="tab is-active" data-tab="servicios" role="tab"><i class="fas fa-tag"></i> Servicios y Precios</button>
-      <button class="tab"           data-tab="caja"      role="tab"><i class="fas fa-cash-register"></i> Caja</button>
-      <button class="tab"           data-tab="productos" role="tab"><i class="fas fa-box"></i> Productos</button>
-      <button class="tab"           data-tab="etiquetas" role="tab"><i class="fas fa-qrcode"></i> Etiquetas</button>
-      <button class="tab"           data-tab="galeria"   role="tab"><i class="fas fa-images"></i> Galería</button>
-      <button class="tab"           data-tab="horarios"  role="tab"><i class="far fa-clock"></i> Horarios</button>
-      <button class="tab"           data-tab="enlaces"   role="tab"><i class="fas fa-link"></i> Enlaces</button>
-      <button class="tab"           data-tab="negocio"   role="tab"><i class="fas fa-store"></i> Negocio</button>
-      <button class="tab"           data-tab="usuarios"  role="tab"><i class="fas fa-users"></i> Usuarios</button>
-    </nav>
 
     <!-- Save bar -->
     <div class="save-bar" id="saveBar" hidden>
@@ -82,7 +107,7 @@
     </div>
 
     <!-- ─── Servicios ─── -->
-    <section class="panel" id="panel-servicios">
+    <section class="panel" id="panel-servicios" hidden>
       <div class="panel-head">
         <h2 class="panel-title">Servicios y precios</h2>
         <button class="btn btn-primary" id="addServiceBtn"><i class="fas fa-plus"></i> Agregar servicio</button>
@@ -92,7 +117,7 @@
     </section>
 
     <!-- ─── Caja ─── -->
-    <section class="panel" id="panel-caja" hidden>
+    <section class="panel" id="panel-caja">
       <div class="panel-head">
         <h2 class="panel-title">Caja</h2>
       </div>
@@ -311,13 +336,14 @@
         <button class="btn btn-primary" id="addCashierBtn"><i class="fas fa-user-plus"></i> Agregar cajero</button>
       </div>
       <p class="panel-help">
-        Los cajeros solo pueden usar la pestaña Caja: cobrar y ver su propio corte de caja.
+        Los cajeros solo pueden usar Caja: cobrar y ver su propio corte de caja.
         No pueden editar servicios, precios, productos ni nada más. Cancelar una venta
         siempre requiere que un administrador autorice con su propio correo y contraseña.
       </p>
       <ul class="users-list" id="usersList"></ul>
     </section>
 
+    </div><!-- /.app-body -->
   </main>
 
   <!-- Toast -->

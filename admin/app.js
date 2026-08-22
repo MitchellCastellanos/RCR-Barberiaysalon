@@ -158,6 +158,11 @@ async function startApp() {
 
   $("#logoutBtn").onclick = logout;
   $$(".tab").forEach(t => t.addEventListener("click", () => switchTab(t.dataset.tab)));
+  $("#sidebarToggle").onclick = () => setSidebarOpen(!document.body.classList.contains("sidebar-open"));
+  $("#sidebarBackdrop").onclick = () => setSidebarOpen(false);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && document.body.classList.contains("sidebar-open")) setSidebarOpen(false);
+  });
 
   $("#addServiceBtn").onclick = () => openServiceModal(null);
   $("#serviceModalClose").onclick = closeServiceModal;
@@ -286,9 +291,13 @@ function isAdminRole() {
 
 function applyRoleUI() {
   const admin = isAdminRole();
+  document.body.classList.toggle("is-admin", admin);
   $$(".tab").forEach((t) => {
     const allowed = admin || t.dataset.tab === "caja";
     t.hidden = !allowed;
+  });
+  $$(".nav-group").forEach((g) => {
+    g.hidden = !$$(".tab", g).some((t) => !t.hidden);
   });
   if (!admin) switchTab("caja");
 
@@ -459,9 +468,28 @@ async function loadData() {
   }
 }
 
+function setSidebarOpen(open) {
+  document.body.classList.toggle("sidebar-open", open);
+  const backdrop = $("#sidebarBackdrop");
+  if (backdrop) backdrop.hidden = !open;
+  const toggle = $("#sidebarToggle");
+  if (toggle) {
+    toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    toggle.setAttribute("aria-label", open ? "Cerrar menú" : "Abrir menú");
+  }
+}
+
 function switchTab(name) {
-  $$(".tab").forEach(t => t.classList.toggle("is-active", t.dataset.tab === name));
+  $$(".tab").forEach(t => {
+    const on = t.dataset.tab === name;
+    t.classList.toggle("is-active", on);
+    if (on && t.dataset.title) {
+      const titleEl = $("#topbarTitle");
+      if (titleEl) titleEl.textContent = t.dataset.title;
+    }
+  });
   $$(".panel").forEach(p => p.hidden = p.id !== `panel-${name}`);
+  setSidebarOpen(false);
 }
 
 // ============================================================
