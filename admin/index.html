@@ -117,10 +117,17 @@
           <div class="pos-cart">
             <div class="pos-cart-title">Venta actual</div>
             <ul class="pos-cart-list" id="posCartList"></ul>
-            <div class="pos-payment">
+            <div class="pos-payment" id="posPaymentQuick">
               <button type="button" class="is-active" data-pos-payment="efectivo"><i class="fas fa-money-bill-wave"></i> Efectivo</button>
               <button type="button" data-pos-payment="tarjeta"><i class="fas fa-credit-card"></i> Tarjeta</button>
+              <button type="button" id="posSplitPaymentBtn"><i class="fas fa-layer-group"></i> Pago mixto</button>
             </div>
+            <ul class="pos-payment-lines" id="posPaymentLines" hidden></ul>
+            <div class="pos-payment-split-actions" id="posSplitActions" hidden>
+              <button type="button" class="btn btn-ghost btn-sm" id="posAddPaymentBtn"><i class="fas fa-plus"></i> Agregar otro pago</button>
+              <button type="button" class="btn btn-ghost btn-sm" id="posCancelSplitBtn">Un solo método</button>
+            </div>
+            <div class="pos-payment-remaining" id="posPaymentRemaining" hidden></div>
             <div class="pos-total-row">
               <span class="pos-total-label">Total</span>
               <span class="pos-total-amount" id="posTotal">$0</span>

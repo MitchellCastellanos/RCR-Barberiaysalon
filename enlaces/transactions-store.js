@@ -18,16 +18,31 @@ function nowIso() {
   return new Date().toISOString();
 }
 
+function round2(n) {
+  return Math.round((Number(n) || 0) * 100) / 100;
+}
+
+/** Normalizes a transaction's payment breakdown, for both new (payments[])
+ *  and legacy (single paymentMethod + total) rows. */
+export function paymentLines(tx) {
+  if (Array.isArray(tx.payments) && tx.payments.length > 0) return tx.payments;
+  return [{ method: tx.paymentMethod || "efectivo", amount: tx.total, note: "" }];
+}
+
 /**
  * cartItems: [{ kind: "service"|"product", refId, name, unitPrice, qty }]
- * paymentMethod: "efectivo" | "tarjeta"
+ * payments: [{ method: "efectivo"|"tarjeta", amount, note? }] — one or more
+ * lines that must add up to the cart total (e.g. split cash/card, or
+ * several card swipes). A single line behaves exactly like the old
+ * single-method flow.
  * cashier: { uid, name } — whoever is signed in and ringing up the sale;
  * firestore.rules requires cashierUid to match the caller's own auth uid.
  */
-export async function sellCart(cartItems, paymentMethod, cashier, notes = "") {
+export async function sellCart(cartItems, payments, cashier, notes = "") {
   if (!FIREBASE_ENABLED) throw new Error("Firebase no está habilitado.");
   if (!cartItems || cartItems.length === 0) throw new Error("El carrito está vacío.");
   if (!cashier || !cashier.uid) throw new Error("No se pudo identificar al cajero.");
+  if (!payments || payments.length === 0) throw new Error("Agrega al menos un método de pago.");
 
   const { db, doc, collection, runTransaction } = await getFirestore();
   const txId = makeId();
@@ -35,6 +50,21 @@ export async function sellCart(cartItems, paymentMethod, cashier, notes = "") {
   const productItems = cartItems.filter((i) => i.kind === "product");
 
   const total = cartItems.reduce((sum, i) => sum + Number(i.unitPrice) * Number(i.qty), 0);
+
+  const cleanPayments = payments.map((p) => ({
+    method: p.method === "tarjeta" ? "tarjeta" : "efectivo",
+    amount: round2(p.amount),
+    note: (p.note || "").trim(),
+  }));
+  if (cleanPayments.some((p) => p.amount <= 0)) {
+    throw new Error("Cada pago debe ser mayor a cero.");
+  }
+  const paymentsTotal = round2(cleanPayments.reduce((s, p) => s + p.amount, 0));
+  if (Math.abs(paymentsTotal - round2(total)) > 0.01) {
+    throw new Error(`Los pagos (${paymentsTotal}) no coinciden con el total de la venta (${round2(total)}).`);
+  }
+  const distinctMethods = new Set(cleanPayments.map((p) => p.method));
+  const paymentMethod = distinctMethods.size > 1 ? "mixto" : cleanPayments[0].method;
 
   await runTransaction(db, async (tx) => {
     // 1. Read + validate stock for every product line first (Firestore
@@ -82,6 +112,7 @@ export async function sellCart(cartItems, paymentMethod, cashier, notes = "") {
         qty: Number(i.qty),
         subtotal: Number(i.unitPrice) * Number(i.qty),
       })),
+      payments: cleanPayments,
       paymentMethod,
       total,
       notes: notes || "",
@@ -94,7 +125,7 @@ export async function sellCart(cartItems, paymentMethod, cashier, notes = "") {
     });
   });
 
-  return { id: txId, total };
+  return { id: txId, total, payments: cleanPayments };
 }
 
 /**
