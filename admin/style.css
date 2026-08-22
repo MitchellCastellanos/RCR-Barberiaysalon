@@ -978,6 +978,31 @@ body:not(.is-admin) .nav-group-label { display: none; }
   background: linear-gradient(135deg, var(--gold-bright), var(--gold));
   border-color: var(--gold);
 }
+.pos-payment-lines { list-style: none; display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+.pos-payment-line {
+  display: grid;
+  grid-template-columns: 100px 1fr 90px auto;
+  gap: 6px;
+  align-items: center;
+}
+.pos-payment-line select,
+.pos-payment-line input {
+  padding: 8px 9px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+  font-size: 0.8rem;
+}
+.pos-payment-split-actions { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+.pos-payment-remaining {
+  text-align: right;
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.pos-payment-remaining.is-off { color: #F5C5C5; }
+.pos-payment-remaining.is-balanced { color: var(--gold-light); }
 .pos-total-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-top: 1px dashed var(--border); margin-bottom: 10px; }
 .pos-total-label { color: var(--text-muted); font-size: 0.88rem; }
 .pos-total-amount {
@@ -1102,6 +1127,11 @@ body:not(.is-admin) .nav-group-label { display: none; }
   .topbar-title { font-size: 0.95rem; }
   .pos-layout { grid-template-columns: 1fr; }
   .pos-cart { position: static; }
+  .pos-payment-line { grid-template-columns: 1fr 1fr; grid-template-areas: "method amount" "note remove"; }
+  .pos-payment-line select { grid-area: method; }
+  .pos-payment-line input[data-field="amount"] { grid-area: amount; }
+  .pos-payment-line input[data-field="note"] { grid-area: note; }
+  .pos-payment-line [data-action="remove"] { grid-area: remove; justify-self: end; }
   .tx-row, .tx-row.has-cashier { grid-template-columns: 1fr auto; grid-template-areas: "time method" "items items" "cashier cashier" "total total"; }
   .tx-row-time { grid-area: time; }
   .tx-row-method { grid-area: method; justify-self: end; }

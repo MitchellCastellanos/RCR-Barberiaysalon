@@ -13,7 +13,7 @@ import {
 } from "../enlaces/products-store.js";
 import { buildProductUrl, renderQrToCanvas } from "../enlaces/qr.js";
 import { buildBarcodeValue, renderBarcodeToCanvas } from "../enlaces/barcode.js";
-import { sellCart, voidTransaction, fetchTransactionsRange } from "../enlaces/transactions-store.js";
+import { sellCart, voidTransaction, fetchTransactionsRange, paymentLines } from "../enlaces/transactions-store.js";
 import { scanCodeFromCamera, extractProductId } from "../enlaces/scan.js";
 import {
   resolveMyProfile, subscribeUsers, createCashier, setUserActive,
@@ -44,7 +44,9 @@ let qrCurrentProduct = null;
 // Caja (POS)
 let posCart = [];
 let posKind = "service";       // which picker list is showing: "service" | "product"
-let posPaymentMethod = "efectivo";
+let posPaymentMethod = "efectivo"; // quick single-method selection (used when not split)
+let posSplitMode = false;          // true once "Pago mixto" is active
+let posPayments = [];              // split-mode payment lines: [{ id, method, amount, note }]
 let posScanStop = null;        // stops the camera scan loop
 let lastSale = null;           // last completed sale, for the optional receipt
 
@@ -216,10 +218,10 @@ async function startApp() {
     $$('[data-pos-kind]').forEach((b) => b.classList.toggle("is-active", b === btn));
     renderPosItemList();
   }));
-  $$('[data-pos-payment]').forEach((btn) => btn.addEventListener("click", () => {
-    posPaymentMethod = btn.dataset.posPayment;
-    $$('[data-pos-payment]').forEach((b) => b.classList.toggle("is-active", b === btn));
-  }));
+  $$('[data-pos-payment]').forEach((btn) => btn.addEventListener("click", () => setQuickPaymentMethod(btn.dataset.posPayment)));
+  $("#posSplitPaymentBtn").onclick = onToggleSplitPayment;
+  $("#posCancelSplitBtn").onclick = onToggleSplitPayment;
+  $("#posAddPaymentBtn").onclick = onAddPaymentLine;
   $("#posScanBtn").onclick = openPosScanModal;
   $("#posScanModalClose").onclick = closePosScanModal;
   $("#posScanModal").addEventListener("click", (e) => {
@@ -1271,6 +1273,13 @@ function changeQty(idx, delta) {
   renderPosCart();
 }
 
+function cartTotal() {
+  return posCart.reduce((sum, i) => sum + i.unitPrice * i.qty, 0);
+}
+function round2(n) {
+  return Math.round((Number(n) || 0) * 100) / 100;
+}
+
 function renderPosCart() {
   const list = $("#posCartList");
   if (posCart.length === 0) {
@@ -1298,12 +1307,131 @@ function renderPosCart() {
       list.appendChild(li);
     });
   }
-  const total = posCart.reduce((sum, i) => sum + i.unitPrice * i.qty, 0);
-  $("#posTotal").textContent = formatPrice(total);
+  $("#posTotal").textContent = formatPrice(cartTotal());
+  updatePaymentRemaining();
+}
+
+// ---------- Payment (single method or split across cash/multiple cards) ----------
+function setQuickPaymentMethod(method) {
+  posSplitMode = false;
+  posPaymentMethod = method;
+  posPayments = [];
+  renderPosPayments();
+}
+
+function onToggleSplitPayment() {
+  if (posSplitMode) {
+    posSplitMode = false;
+    posPayments = [];
+  } else {
+    posSplitMode = true;
+    posPayments = [{ id: makeId(), method: posPaymentMethod, amount: round2(cartTotal()), note: "" }];
+  }
+  renderPosPayments();
+}
+
+function onAddPaymentLine() {
+  const remaining = round2(cartTotal() - posPayments.reduce((s, p) => s + (Number(p.amount) || 0), 0));
+  const lastMethod = posPayments[posPayments.length - 1]?.method || "efectivo";
+  posPayments.push({
+    id: makeId(),
+    method: lastMethod === "efectivo" ? "tarjeta" : "efectivo",
+    amount: Math.max(0, remaining),
+    note: "",
+  });
+  renderPosPayments();
+}
+
+function onRemovePaymentLine(id) {
+  posPayments = posPayments.filter((p) => p.id !== id);
+  if (posPayments.length === 0) posSplitMode = false;
+  renderPosPayments();
+}
+
+function paymentsRemaining() {
+  const sum = posSplitMode
+    ? posPayments.reduce((s, p) => s + (Number(p.amount) || 0), 0)
+    : cartTotal();
+  return round2(cartTotal() - sum);
+}
+
+function renderPosPayments() {
+  $$('[data-pos-payment]').forEach((b) => b.classList.toggle("is-active", !posSplitMode && b.dataset.posPayment === posPaymentMethod));
+  $("#posSplitPaymentBtn").classList.toggle("is-active", posSplitMode);
+
+  const linesEl = $("#posPaymentLines");
+  const splitActions = $("#posSplitActions");
+  const remainingEl = $("#posPaymentRemaining");
+
+  if (!posSplitMode) {
+    linesEl.hidden = true;
+    linesEl.innerHTML = "";
+    splitActions.hidden = true;
+    remainingEl.hidden = true;
+    $("#posChargeBtn").disabled = false;
+    return;
+  }
+
+  linesEl.hidden = false;
+  splitActions.hidden = false;
+  remainingEl.hidden = false;
+
+  linesEl.innerHTML = posPayments.map((p) => `
+    <li class="pos-payment-line" data-id="${p.id}">
+      <select data-field="method">
+        <option value="efectivo" ${p.method === "efectivo" ? "selected" : ""}>Efectivo</option>
+        <option value="tarjeta" ${p.method === "tarjeta" ? "selected" : ""}>Tarjeta</option>
+      </select>
+      <input type="number" min="0" step="0.01" data-field="amount" value="${p.amount}" />
+      <input type="text" data-field="note" placeholder="Ref. (opcional)" maxlength="20" value="${escapeAttr(p.note || "")}" />
+      <button type="button" class="icon-btn icon-btn-danger" data-action="remove" title="Quitar"><i class="fas fa-times"></i></button>
+    </li>
+  `).join("");
+
+  linesEl.querySelectorAll(".pos-payment-line").forEach((li) => {
+    const id = li.dataset.id;
+    const line = posPayments.find((p) => p.id === id);
+    li.querySelector('[data-field="method"]').addEventListener("change", (e) => { line.method = e.target.value; });
+    li.querySelector('[data-field="amount"]').addEventListener("input", (e) => {
+      line.amount = e.target.value === "" ? 0 : Number(e.target.value);
+      updatePaymentRemaining();
+    });
+    li.querySelector('[data-field="note"]').addEventListener("input", (e) => { line.note = e.target.value; });
+    li.querySelector('[data-action="remove"]').onclick = () => onRemovePaymentLine(id);
+  });
+
+  updatePaymentRemaining();
+}
+
+function updatePaymentRemaining() {
+  if (!posSplitMode) return;
+  const remainingEl = $("#posPaymentRemaining");
+  const remaining = paymentsRemaining();
+  const balanced = Math.abs(remaining) < 0.01;
+  remainingEl.textContent = balanced ? "Pagos completos" : `Restante: ${formatPrice(remaining)}`;
+  remainingEl.classList.toggle("is-balanced", balanced);
+  remainingEl.classList.toggle("is-off", !balanced);
+  $("#posChargeBtn").disabled = !balanced || posPayments.length === 0;
+}
+
+function currentPayments() {
+  if (!posSplitMode) return [{ method: posPaymentMethod, amount: round2(cartTotal()), note: "" }];
+  return posPayments.map((p) => ({ method: p.method, amount: round2(p.amount), note: (p.note || "").trim() }));
+}
+
+function summarizePayments(payments) {
+  if (payments.length === 1) return payments[0].method === "tarjeta" ? "Tarjeta" : "Efectivo";
+  return payments.map((p) => `${p.method === "tarjeta" ? "Tarjeta" : "Efectivo"} ${formatPrice(p.amount)}`).join(" + ");
 }
 
 async function onCharge() {
   if (posCart.length === 0) { toast("Agrega al menos un artículo.", "error"); return; }
+  const payments = currentPayments();
+  if (posSplitMode) {
+    if (payments.some((p) => p.amount <= 0)) { toast("Cada pago debe ser mayor a cero.", "error"); return; }
+    const remaining = paymentsRemaining();
+    if (Math.abs(remaining) >= 0.01) { toast(`Los pagos no cuadran con el total (restante ${formatPrice(remaining)}).`, "error"); return; }
+  }
 
   const btn = $("#posChargeBtn");
   btn.disabled = true;
@@ -1311,12 +1439,15 @@ async function onCharge() {
   try {
     const items = posCart.map((i) => ({ kind: i.kind, refId: i.refId, name: i.name, unitPrice: i.unitPrice, qty: i.qty }));
     const cashier = { uid: myProfile.uid, name: myProfile.displayName || myProfile.email };
-    const sale = await sellCart(items, posPaymentMethod, cashier);
-    lastSale = { ...sale, items, paymentMethod: posPaymentMethod, createdAt: new Date().toISOString() };
+    const sale = await sellCart(items, payments, cashier);
+    lastSale = { ...sale, items, payments, createdAt: new Date().toISOString() };
     posCart = [];
+    posSplitMode = false;
+    posPayments = [];
     renderPosCart();
+    renderPosPayments();
     $("#posReceiptSummary").textContent =
-      `Total cobrado: ${formatPrice(sale.total)} (${posPaymentMethod === "tarjeta" ? "Tarjeta" : "Efectivo"}). ¿Quieres imprimir un recibo?`;
+      `Total cobrado: ${formatPrice(sale.total)} (${summarizePayments(payments)}). ¿Quieres imprimir un recibo?`;
     $("#posReceiptModal").hidden = false;
     toast("Venta registrada.", "success");
   } catch (err) {
@@ -1349,7 +1480,12 @@ function onPrintReceipt() {
       <div style="display:flex;justify-content:space-between;font-weight:700;font-size:3.4mm;margin-top:2mm;">
         <span>Total</span><span>${formatPrice(lastSale.total)}</span>
       </div>
-      <div style="font-size:2.8mm;margin-top:1mm;">Pago: ${lastSale.paymentMethod === "tarjeta" ? "Tarjeta" : "Efectivo"}</div>
+      ${(lastSale.payments || []).map((p) => `
+        <div style="display:flex;justify-content:space-between;font-size:2.8mm;margin-top:1mm;">
+          <span>${p.method === "tarjeta" ? "Tarjeta" : "Efectivo"}${p.note ? ` (${escape(p.note)})` : ""}</span>
+          <span>${formatPrice(p.amount)}</span>
+        </div>
+      `).join("")}
     </div>
   `;
   document.body.classList.add("is-printing-receipt");
@@ -1422,6 +1558,12 @@ async function loadCorte() {
   }
 }
 
+function paymentBadge(r) {
+  if (r.paymentMethod === "tarjeta") return "Tarjeta";
+  if (r.paymentMethod === "mixto") return "Mixto";
+  return "Efectivo";
+}
+
 function renderCorte() {
   const admin = isAdminRole();
   const rows = admin && corteCashierFilter !== "all"
@@ -1429,8 +1571,13 @@ function renderCorte() {
     : lastCorteRows;
 
   const valid = rows.filter((r) => !r.voided);
-  const efectivo = valid.filter((r) => r.paymentMethod === "efectivo").reduce((s, r) => s + r.total, 0);
-  const tarjeta = valid.filter((r) => r.paymentMethod === "tarjeta").reduce((s, r) => s + r.total, 0);
+  let efectivo = 0, tarjeta = 0;
+  valid.forEach((r) => {
+    paymentLines(r).forEach((p) => {
+      if (p.method === "tarjeta") tarjeta += Number(p.amount) || 0;
+      else efectivo += Number(p.amount) || 0;
+    });
+  });
 
   $("#corteTotals").innerHTML = `
     <div class="pos-report-tile"><div class="pos-report-tile-label">Efectivo</div><div class="pos-report-tile-value">${formatPrice(efectivo)}</div></div>
@@ -1449,7 +1596,7 @@ function renderCorte() {
       <span class="tx-row-time">${new Date(r.createdAt).toLocaleString("es-MX", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</span>
       <span class="tx-row-items">${escape((r.items || []).map((i) => `${i.qty}× ${i.name}`).join(", "))}</span>
       ${admin ? `<span class="tx-row-cashier">${escape(r.cashierName || "—")}</span>` : ""}
-      <span class="tx-row-method">${r.paymentMethod === "tarjeta" ? "Tarjeta" : "Efectivo"}</span>
+      <span class="tx-row-method" title="${escapeAttr(paymentLines(r).map((p) => `${p.method === "tarjeta" ? "Tarjeta" : "Efectivo"}: ${formatPrice(p.amount)}`).join(" · "))}">${paymentBadge(r)}</span>
       <span class="tx-row-total">${formatPrice(r.total)}</span>
       ${r.voided ? "" : `<button type="button" class="icon-btn icon-btn-danger" data-action="void" data-tx-id="${r.id}" title="Cancelar venta"><i class="fas fa-ban"></i></button>`}
     </div>
