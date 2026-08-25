@@ -1,13 +1,11 @@
 // ============================================================
 // Camera scanner used by the Caja to add a product by scanning
-// either its customer-facing QR (producto.html?id=...) or its
-// checkout barcode (Code128, encodes the product id directly).
+// its customer-facing QR (producto.html?id=...) — the same QR
+// printed on the product's label.
 //
-// Uses the native BarcodeDetector API (reads both QR and Code128)
-// where available — Chrome/Android, the typical POS device. Falls
-// back to a jsQR-based QR-only scanner elsewhere (e.g. iOS Safari),
-// surfacing a heads-up through onError that barcodes won't be read
-// there without dropping the scan.
+// Uses the native BarcodeDetector API where available (Chrome/
+// Android, the typical POS device), falling back to a jsQR-based
+// scanner elsewhere (e.g. iOS Safari).
 // ============================================================
 
 const JSQR_URL = "https://cdn.jsdelivr.net/npm/jsqr@1.4.0/+esm";
@@ -18,19 +16,19 @@ function getJsQr() {
   return _jsQrPromise;
 }
 
-/** Pulls the product id back out of a scanned QR URL or a raw barcode payload. */
+/** Pulls the product id back out of a scanned QR URL. */
 export function extractProductId(text) {
   try {
     const url = new URL(text);
     return url.searchParams.get("id") || text;
   } catch {
-    return text || null; // not a URL — the barcode payload *is* the id
+    return text || null; // not a URL — treat the raw payload as the id
   }
 }
 
 /**
- * Opens the device camera into `videoEl` and scans for a QR code or
- * barcode. Calls onResult(text) once, then stops itself. Returns a
+ * Opens the device camera into `videoEl` and scans for a QR code.
+ * Calls onResult(text) once, then stops itself. Returns a
  * stop() function so the caller can cancel manually (e.g. on modal close).
  */
 export async function scanCodeFromCamera(videoEl, onResult, onError) {
@@ -58,7 +56,7 @@ export async function scanCodeFromCamera(videoEl, onResult, onError) {
   if ("BarcodeDetector" in window) {
     let detector;
     try {
-      detector = new window.BarcodeDetector({ formats: ["qr_code", "code_128"] });
+      detector = new window.BarcodeDetector({ formats: ["qr_code"] });
     } catch {
       detector = new window.BarcodeDetector();
     }
@@ -80,8 +78,7 @@ export async function scanCodeFromCamera(videoEl, onResult, onError) {
     return stop;
   }
 
-  // Fallback: no native barcode reader on this browser — QR-only via jsQR.
-  onError?.(new Error("Este navegador no lee código de barras de forma nativa, solo QR. Para leer código de barras usa Chrome en Android."));
+  // Fallback: no native barcode reader on this browser — use jsQR instead.
   let jsQR;
   try {
     const mod = await getJsQr();

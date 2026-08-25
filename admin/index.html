@@ -222,10 +222,6 @@
           <input type="checkbox" id="labelBulkShowPrice" checked />
           <span>Incluir precio</span>
         </label>
-        <label class="check" style="align-self:center;grid-column:1 / -1;">
-          <input type="checkbox" id="labelBulkShowBarcode" />
-          <span>Incluir código de barras (para venderlas en Caja)</span>
-        </label>
       </div>
       <div class="modal-actions" style="justify-content:flex-start;margin-top:14px;">
         <button type="button" class="btn btn-primary" id="labelBulkPrintBtn"><i class="fas fa-print"></i> Imprimir seleccionadas</button>
@@ -466,12 +462,6 @@
           <span class="field-label">Modo de uso</span>
           <textarea id="prodUsage" rows="2" maxlength="300" placeholder="Ej. Aplicar una cantidad pequeña sobre cabello húmedo y peinar."></textarea>
         </label>
-        <label class="field full">
-          <span class="field-label">Código de barras</span>
-          <input type="text" id="prodBarcode" maxlength="40" placeholder="Se genera automáticamente si lo dejas vacío" />
-          <span class="field-hint">Déjalo vacío para usar el código interno del producto. Si el producto ya trae un código de barras del fabricante, ponlo aquí para usar ese en su lugar.</span>
-        </label>
-
         <div class="field full" id="prodStockInfo" hidden></div>
 
         <div class="field full">
@@ -541,12 +531,6 @@
           <button type="button" class="btn btn-ghost" id="qrCopyBtn"><i class="fas fa-copy"></i> Copiar QR</button>
           <button type="button" class="btn btn-ghost" id="qrDownloadBtn"><i class="fas fa-download"></i> Descargar QR</button>
         </div>
-
-        <canvas id="qrBarcodeCanvas" hidden></canvas>
-        <div class="qr-export-row" id="barcodeExportRow" hidden>
-          <button type="button" class="btn btn-ghost" id="barcodeCopyBtn"><i class="fas fa-copy"></i> Copiar código de barras</button>
-          <button type="button" class="btn btn-ghost" id="barcodeDownloadBtn"><i class="fas fa-download"></i> Descargar código de barras</button>
-        </div>
       </div>
       <p class="field-hint" style="text-align:center;margin-bottom:10px;">
         "Copiar" los pega directo en Word/PowerPoint/Canva; "Descargar" los guarda como imagen PNG.
@@ -564,10 +548,6 @@
           <input type="checkbox" id="qrShowPrice" checked />
           <span>Incluir precio</span>
         </label>
-        <label class="check" style="align-self:center;grid-column:1 / -1;">
-          <input type="checkbox" id="qrShowBarcode" />
-          <span>Incluir código de barras (para venderlo en Caja)</span>
-        </label>
       </div>
       <div class="modal-actions">
         <button type="button" class="btn btn-ghost" id="qrModalCancelBtn">Cerrar</button>
@@ -576,7 +556,7 @@
     </div>
   </div>
 
-  <!-- Caja: QR / barcode scan modal -->
+  <!-- Caja: QR scan modal -->
   <div class="modal" id="posScanModal" hidden>
     <div class="modal-card">
       <div class="modal-head">
@@ -584,7 +564,7 @@
         <button class="icon-btn" id="posScanModalClose" aria-label="Cerrar"><i class="fas fa-times"></i></button>
       </div>
       <video id="posScanVideo" style="width:100%;border-radius:12px;background:#000;" muted playsinline></video>
-      <p class="field-hint" id="posScanHint" style="margin-top:10px;">Apunta la cámara al código QR o al código de barras del producto.</p>
+      <p class="field-hint" id="posScanHint" style="margin-top:10px;">Apunta la cámara al código QR del producto.</p>
     </div>
   </div>
 
