@@ -84,7 +84,6 @@ export async function createProduct(input) {
     active: input.active !== false,
     order: Number(input.order) || 0,
     photos: [],
-    barcode: input.barcode || id,
     createdAt: nowIso(),
     updatedAt: nowIso(),
   };

@@ -12,7 +12,6 @@ import {
   adjustStock, subscribeMovements, uploadProductPhoto, deleteProductPhoto,
 } from "../enlaces/products-store.js";
 import { buildProductUrl, renderQrToCanvas } from "../enlaces/qr.js";
-import { buildBarcodeValue, renderBarcodeToCanvas } from "../enlaces/barcode.js";
 import { sellCart, voidTransaction, fetchTransactionsRange, paymentLines } from "../enlaces/transactions-store.js";
 import { scanCodeFromCamera, extractProductId } from "../enlaces/scan.js";
 import {
@@ -199,12 +198,9 @@ async function startApp() {
   $("#qrModal").addEventListener("click", (e) => {
     if (e.target.id === "qrModal") closeQrModal();
   });
-  $("#qrShowBarcode").addEventListener("change", onToggleQrBarcodePreview);
   $("#qrPrintBtn").onclick = onPrintLabel;
   $("#qrCopyBtn").onclick = onCopyQr;
   $("#qrDownloadBtn").onclick = onDownloadQr;
-  $("#barcodeCopyBtn").onclick = onCopyBarcode;
-  $("#barcodeDownloadBtn").onclick = onDownloadBarcode;
   window.addEventListener("afterprint", () => {
     document.body.classList.remove("is-printing-label");
     document.body.classList.remove("is-printing-receipt");
@@ -756,7 +752,6 @@ function openProductModal(id) {
   $("#prodSize").value = p?.size || "";
   $("#prodHighlights").value = (p?.highlights || []).join("\n");
   $("#prodUsage").value = p?.usage || "";
-  $("#prodBarcode").value = isNew ? "" : (p?.barcode || "");
   $("#prodDeleteBtn").hidden = isNew;
 
   $("#prodInitialStockField").hidden = !isNew;
@@ -865,12 +860,6 @@ async function onProductFormSubmit(ev) {
     highlights: $("#prodHighlights").value.split("\n").map((s) => s.trim()).filter(Boolean),
     usage: $("#prodUsage").value.trim(),
   };
-  const barcodeInput = $("#prodBarcode").value.trim();
-  if (id) {
-    payload.barcode = barcodeInput || id; // empty = revert to the internal id
-  } else if (barcodeInput) {
-    payload.barcode = barcodeInput;
-  }
 
   const btn = $("#prodSaveBtn");
   btn.disabled = true;
@@ -987,16 +976,13 @@ async function onStockFormSubmit(ev) {
   }
 }
 
-// ---------- QR + barcode labels ----------
+// ---------- QR labels ----------
 async function openQrModal(productId) {
   const p = products.find((x) => x.id === productId);
   if (!p) return;
   qrCurrentProduct = p;
   $("#qrLabelName").textContent = p.name;
   $("#qrLabelPrice").textContent = formatPrice(p.price);
-  $("#qrShowBarcode").checked = false;
-  $("#qrBarcodeCanvas").hidden = true;
-  $("#barcodeExportRow").hidden = true;
   $("#qrModal").hidden = false;
   try {
     await renderQrToCanvas($("#qrCanvas"), buildProductUrl(p.id), { size: 256 });
@@ -1005,26 +991,12 @@ async function openQrModal(productId) {
   }
 }
 
-async function onToggleQrBarcodePreview() {
-  const show = $("#qrShowBarcode").checked;
-  const canvas = $("#qrBarcodeCanvas");
-  canvas.hidden = !show;
-  $("#barcodeExportRow").hidden = !show;
-  if (show && qrCurrentProduct) {
-    try {
-      await renderBarcodeToCanvas(canvas, buildBarcodeValue(qrCurrentProduct));
-    } catch (err) {
-      toast("No se pudo generar el código de barras: " + err.message, "error");
-    }
-  }
-}
-
 function closeQrModal() {
   $("#qrModal").hidden = true;
   qrCurrentProduct = null;
 }
 
-// ---------- Copy / download QR + barcode (for the client's own label designs) ----------
+// ---------- Copy / download QR (for the client's own label designs) ----------
 async function canvasToClipboard(canvas) {
   const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
   if (!blob) throw new Error("No se pudo generar la imagen.");
@@ -1063,44 +1035,17 @@ function onDownloadQr() {
   downloadCanvas($("#qrCanvas"), `qr-${slugify(qrCurrentProduct.name)}.png`);
 }
 
-async function onCopyBarcode() {
-  try {
-    await canvasToClipboard($("#qrBarcodeCanvas"));
-    toast("Código de barras copiado. Ya lo puedes pegar en Word, Canva, etc.", "success");
-  } catch (err) {
-    toast(err.message || "No se pudo copiar el código de barras.", "error");
-  }
-}
-
-function onDownloadBarcode() {
-  if (!qrCurrentProduct) return;
-  downloadCanvas($("#qrBarcodeCanvas"), `codigo-barras-${slugify(qrCurrentProduct.name)}.png`);
-}
-
 async function onPrintLabel() {
   if (!qrCurrentProduct) return;
   const sizeCm = $("#qrSize").value;
   const showPrice = $("#qrShowPrice").checked;
-  const showBarcode = $("#qrShowBarcode").checked;
   const dataUrl = $("#qrCanvas").toDataURL("image/png");
-
-  let barcodeImg = "";
-  if (showBarcode) {
-    try {
-      const canvas = document.createElement("canvas");
-      await renderBarcodeToCanvas(canvas, buildBarcodeValue(qrCurrentProduct), { height: 26 });
-      barcodeImg = `<img src="${canvas.toDataURL("image/png")}" style="width:90%;height:auto;" />`;
-    } catch (err) {
-      toast("No se pudo generar el código de barras: " + err.message, "error");
-    }
-  }
 
   $("#printLabel").innerHTML = `
     <div class="print-label-item" style="width:${sizeCm}cm;height:${sizeCm}cm;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5mm;padding:1mm;box-sizing:border-box;font-family:sans-serif;">
-      <img src="${dataUrl}" style="width:${showBarcode ? "60%" : "80%"};height:auto;" />
+      <img src="${dataUrl}" style="width:80%;height:auto;" />
       <div style="font-size:2.2mm;font-weight:700;text-align:center;line-height:1.1;">${escape(qrCurrentProduct.name)}</div>
       ${showPrice ? `<div style="font-size:2mm;">${escape(formatPrice(qrCurrentProduct.price))}</div>` : ""}
-      ${barcodeImg}
     </div>
   `;
   document.body.classList.add("is-printing-label");
@@ -1133,7 +1078,6 @@ async function onPrintBulkLabels() {
 
   const sizeCm = $("#labelBulkSize").value;
   const showPrice = $("#labelBulkShowPrice").checked;
-  const showBarcode = $("#labelBulkShowBarcode").checked;
 
   const items = [];
   for (const cb of checked) {
@@ -1154,18 +1098,11 @@ async function onPrintBulkLabels() {
       const canvas = document.createElement("canvas");
       await renderQrToCanvas(canvas, buildProductUrl(p.id), { size: 200 });
       const dataUrl = canvas.toDataURL("image/png");
-      let barcodeImg = "";
-      if (showBarcode) {
-        const bcCanvas = document.createElement("canvas");
-        await renderBarcodeToCanvas(bcCanvas, buildBarcodeValue(p), { height: 26 });
-        barcodeImg = `<img src="${bcCanvas.toDataURL("image/png")}" style="width:90%;height:auto;" />`;
-      }
       labelsHtml.push(`
         <div class="print-label-item" style="width:${sizeCm}cm;height:${sizeCm}cm;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5mm;padding:1mm;box-sizing:border-box;font-family:sans-serif;">
-          <img src="${dataUrl}" style="width:${showBarcode ? "60%" : "80%"};height:auto;" />
+          <img src="${dataUrl}" style="width:80%;height:auto;" />
           <div style="font-size:2.2mm;font-weight:700;text-align:center;line-height:1.1;">${escape(p.name)}</div>
           ${showPrice ? `<div style="font-size:2mm;">${escape(formatPrice(p.price))}</div>` : ""}
-          ${barcodeImg}
         </div>
       `);
     }
@@ -1495,7 +1432,7 @@ function onPrintReceipt() {
 
 async function openPosScanModal() {
   $("#posScanModal").hidden = false;
-  $("#posScanHint").textContent = "Apunta la cámara al código QR o al código de barras del producto.";
+  $("#posScanHint").textContent = "Apunta la cámara al código QR del producto.";
   posScanStop = await scanCodeFromCamera($("#posScanVideo"), onScanResult, onScanError);
 }
 
