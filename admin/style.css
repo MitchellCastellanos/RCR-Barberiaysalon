@@ -1074,6 +1074,17 @@ body:not(.is-admin) .nav-group-label { display: none; }
 .label-pick-row input[type="checkbox"] { accent-color: var(--gold); width: 18px; height: 18px; }
 .label-pick-row input[type="number"] { width: 60px; }
 
+.label-bulk-previews { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 14px; }
+.label-bulk-preview-item {
+  flex: 0 0 auto;
+  width: 150px;
+  padding: 12px 8px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.label-bulk-preview-item canvas { width: 100%; height: auto; border-radius: 8px; background: #fff; padding: 8px; box-sizing: border-box; }
+
 /* ============================================================
    RESPONSIVE
    ============================================================ */

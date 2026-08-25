@@ -249,6 +249,7 @@ async function startApp() {
   });
 
   $("#labelBulkPrintBtn").onclick = onPrintBulkLabels;
+  $("#labelBulkShowPrice").addEventListener("change", renderLabelPreviews);
 
   initProducts();
 
@@ -1061,6 +1062,7 @@ function renderLabelPickList() {
   const active = products.filter((p) => p.active !== false);
   if (active.length === 0) {
     list.innerHTML = `<li class="empty">Aún no hay productos.</li>`;
+    renderLabelPreviews();
     return;
   }
   list.innerHTML = active.map((p) => `
@@ -1070,6 +1072,66 @@ function renderLabelPickList() {
       <input type="number" min="1" step="1" value="1" data-label-qty="${p.id}" title="Copias" />
     </li>
   `).join("");
+  list.querySelectorAll('[data-label-pick]').forEach((cb) => {
+    cb.addEventListener("change", renderLabelPreviews);
+  });
+  renderLabelPreviews();
+}
+
+// Live preview of each selected product's QR label — same look and
+// copy/download controls as the single-product modal, just repeated.
+async function renderLabelPreviews() {
+  const container = $("#labelBulkPreviews");
+  if (!container) return;
+  const checked = $$('[data-label-pick]').filter((cb) => cb.checked);
+  if (checked.length === 0) {
+    container.innerHTML = "";
+    return;
+  }
+  const showPrice = $("#labelBulkShowPrice").checked;
+  const picked = checked
+    .map((cb) => products.find((p) => p.id === cb.dataset.labelPick))
+    .filter(Boolean);
+
+  container.innerHTML = picked.map((p) => `
+    <div class="label-bulk-preview-item">
+      <canvas data-bulk-canvas="${p.id}" width="150" height="150"></canvas>
+      <div class="qr-label-name">${escape(p.name)}</div>
+      ${showPrice ? `<div class="qr-label-price">${formatPrice(p.price)}</div>` : ""}
+      <div class="qr-export-row">
+        <button type="button" class="btn btn-ghost" data-bulk-copy="${p.id}"><i class="fas fa-copy"></i> Copiar</button>
+        <button type="button" class="btn btn-ghost" data-bulk-download="${p.id}"><i class="fas fa-download"></i> Descargar</button>
+      </div>
+    </div>
+  `).join("");
+
+  for (const p of picked) {
+    const canvas = container.querySelector(`canvas[data-bulk-canvas="${p.id}"]`);
+    if (!canvas) continue;
+    try {
+      await renderQrToCanvas(canvas, buildProductUrl(p.id), { size: 150 });
+    } catch (err) {
+      toast(`No se pudo generar el QR de "${p.name}": ` + err.message, "error");
+    }
+  }
+
+  container.querySelectorAll('[data-bulk-copy]').forEach((btn) => {
+    const p = picked.find((x) => x.id === btn.dataset.bulkCopy);
+    btn.onclick = async () => {
+      try {
+        await canvasToClipboard(container.querySelector(`canvas[data-bulk-canvas="${p.id}"]`));
+        toast("QR copiado. Ya lo puedes pegar en Word, Canva, etc.", "success");
+      } catch (err) {
+        toast(err.message || "No se pudo copiar el QR.", "error");
+      }
+    };
+  });
+  container.querySelectorAll('[data-bulk-download]').forEach((btn) => {
+    const p = picked.find((x) => x.id === btn.dataset.bulkDownload);
+    btn.onclick = () => {
+      downloadCanvas(container.querySelector(`canvas[data-bulk-canvas="${p.id}"]`), `qr-${slugify(p.name)}.png`);
+    };
+  });
 }
 
 async function onPrintBulkLabels() {
